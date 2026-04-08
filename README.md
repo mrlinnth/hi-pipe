@@ -61,7 +61,7 @@ Output will be in the `dist/` directory.
 docker-compose up --build
 ```
 
-Access at `http://localhost:8080`
+Access at `http://localhost:3200`
 
 ## Environment Variables
 
@@ -77,13 +77,16 @@ VITE_COCKPIT_API_KEY=your_key_here
 ```
 hi-pipe/
 ├── src/
-│   ├── components/    # React components
-│   ├── hooks/         # Custom hooks (API, etc.)
-│   ├── lib/           # Utility functions, API client
-│   ├── constants/     # Hardcoded values (sectors, periods)
-│   └── styles/        # CSS/SCSS files
+│   ├── components/    # React components (FilterBar, Board, etc.)
+│   ├── hooks/         # Custom hooks (useDeals, useStages)
+│   ├── api/           # Cockpit API client
+│   ├── constants/     # Hardcoded values (PERIODS, SECTORS)
+│   ├── styles/        # CSS with variables
+│   ├── App.jsx        # Main application component
+│   └── main.jsx      # React entry point
 ├── docs/
-│   └── prd.md         # Product Requirements Document
+│   ├── PROGRESS.md    # Implementation progress tracking
+│   └── implementation_plan.md  # Detailed implementation steps
 ├── AGENTS.md          # Agent collaboration guidelines
 ├── docker-compose.yml
 └── nginx.conf
@@ -142,8 +145,25 @@ See `AGENTS.md` for infrastructure agent responsibilities and deployment procedu
 
 ## Documentation
 
-- [PRD](docs/prd.md) - Product Requirements Document
+- [Implementation Plan](docs/implementation_plan.md) - Detailed implementation steps
+- [Progress](docs/PROGRESS.md) - Current implementation status
 - [AGENTS.md](AGENTS.md) - Agent collaboration guidelines
+
+## Implementation Status
+
+**Completed (Steps 1-8):**
+- ✅ Project setup with Vite + React
+- ✅ Constants for periods and sectors
+- ✅ Cockpit API layer with all CRUD operations
+- ✅ Custom hooks (useDeals, useStages)
+- ✅ Global state and filtering logic
+- ✅ All 7 components (FilterBar, TotalsBar, Board, Column, DealCard, DealModal, StageSettings)
+- ✅ Comprehensive CSS styling with mobile responsiveness
+- ✅ Docker setup with nginx and docker-compose
+
+**Remaining (Steps 9-10):**
+- ⏳ Cockpit CMS configuration (collections, API key, CORS)
+- ⏳ End-to-end build verification
 
 ## API
 

@@ -63,30 +63,14 @@ Step 8 (Docker Setup) is complete. nginx.conf and docker-compose.yml created. Re
 ## Up Next
 
 - [ ] Step 9: Cockpit CMS Setup
-
-- [ ] Step 6: Components
-  - Create FilterBar.jsx
-  - Create TotalsBar.jsx
-  - Create Board.jsx
-  - Create Column.jsx
-  - Create DealCard.jsx
-  - Create DealModal.jsx
-  - Create StageSettings.jsx
-
-- [ ] Step 7: Styling
-  - Apply comprehensive CSS styling
-
-- [ ] Step 8: Docker Setup
-  - Create nginx.conf
-  - Create docker-compose.yml
-
-- [ ] Step 9: Cockpit CMS Setup
-  - Create Stages collection
-  - Create Deals collection
-  - Configure API key and CORS
+  - Create Stages collection in Cockpit
+  - Create Deals collection in Cockpit
+  - Configure API key
+  - Configure CORS
 
 - [ ] Step 10: Build Order Verification
-  - Follow 18-step build order and verify each step
+  - Test 18-step build order
+  - Verify each step works end-to-end
 
 ---
 
