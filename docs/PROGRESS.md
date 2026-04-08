@@ -2,22 +2,24 @@
 
 ## Current
 
-- **Task**: Step 6 - Components
+- **Task**: Step 7 - Styling
 - **Branch**: `main`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Step 5 (Global State and Filtering Logic) is complete. App.jsx implemented with filter state, URL sync, and filteredDeals computation. Ready to implement components.
+Step 6 (Components) is complete. All 7 components implemented and integrated in App.jsx. Ready to apply comprehensive CSS styling.
 
 ### Notes
 
-- App.jsx now manages all global state: deals, stages, active filters, isSettingsOpen
-- Filter state synced with URL query parameters
-- Filtered deals computed based on period, sector, and tag filters
-- Available tags derived from all deals
-- Component structure ready for FilterBar, TotalsBar, Board, DealModal, StageSettings
+- FilterBar: Period, sector, and tag filter pills
+- TotalsBar: Deal count and total value display
+- Board: DnD Kit drag-and-drop context for columns
+- Column: Droppable zone with stage header, count, and value
+- DealCard: Draggable card with deal info and badges
+- DealModal: Full modal for create/edit deals with form validation
+- StageSettings: Modal for managing stages (add, edit, delete, reorder)
 
 ---
 
@@ -42,11 +44,20 @@ Step 5 (Global State and Filtering Logic) is complete. App.jsx implemented with 
 - [x] Step 5: Global State and Filtering Logic (2026-04-08)
   - Implement App.jsx with filter logic and URL sync
 
+- [x] Step 6: Components (2026-04-08)
+  - Create FilterBar.jsx
+  - Create TotalsBar.jsx
+  - Create Board.jsx
+  - Create Column.jsx
+  - Create DealCard.jsx
+  - Create DealModal.jsx
+  - Create StageSettings.jsx
+
 ---
 
 ## Up Next
 
-- [ ] Step 6: Components
+- [ ] Step 7: Styling
 
 - [ ] Step 6: Components
   - Create FilterBar.jsx
