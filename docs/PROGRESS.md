@@ -2,24 +2,20 @@
 
 ## Current
 
-- **Task**: Step 2 - Constants
-- **Branch**: `feature/project-setup`
+- **Task**: Step 5 - Global State and Filtering Logic
+- **Branch**: `feature/step2-constants`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Project setup (Step 1) is complete. Vite + React initialized with all dependencies installed. Dev server verified working. Ready to implement constants file.
+Step 4 (Custom Hooks) is complete. useStages and useDeals hooks implemented. Ready to implement App.jsx with filter logic and URL sync.
 
 ### Notes
 
-- Project initialized with Vite + React 18
-- DnD Kit dependencies installed (@dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities)
-- Directory structure created: src/{api,components,hooks,constants,styles}/
-- Environment variables configured (.env.example created)
-- Google Fonts added (DM Sans, DM Mono)
-- Basic styling with CSS variables implemented
-- Dev server confirmed working on localhost:5173
+- useStages hook manages stages state with reload, addStage, editStage, removeStage
+- useDeals hook manages deals state with reload, addDeal, editDeal, removeDeal, moveDeal
+- Both hooks auto-fetch on mount and return { data, loading, error, ...actions }
 
 ---
 
@@ -31,19 +27,21 @@ Project setup (Step 1) is complete. Vite + React initialized with all dependenci
   - Create .env.example file
   - Verify dev server works
 
+- [x] Step 2: Constants (2026-04-08)
+  - Create src/constants/options.js with PERIODS and SECTORS
+
+- [x] Step 3: Cockpit API Layer (2026-04-08)
+  - Create src/api/cockpit.js with all API functions
+
+- [x] Step 4: Custom Hooks (2026-04-08)
+  - Create src/hooks/useStages.js
+  - Create src/hooks/useDeals.js
+
 ---
 
 ## Up Next
 
-- [ ] Step 2: Constants
-  - Create src/constants/options.js with PERIODS and SECTORS
-
-- [ ] Step 3: Cockpit API Layer
-  - Create src/api/cockpit.js with all API functions
-
-- [ ] Step 4: Custom Hooks
-  - Create src/hooks/useStages.js
-  - Create src/hooks/useDeals.js
+- [ ] Step 5: Global State and Filtering Logic
 
 - [ ] Step 5: Global State and Filtering Logic
   - Implement App.jsx with filter logic and URL sync
