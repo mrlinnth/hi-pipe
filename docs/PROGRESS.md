@@ -2,20 +2,20 @@
 
 ## Current
 
-- **Task**: Step 3 - Cockpit API Layer
+- **Task**: Step 4 - Custom Hooks
 - **Branch**: `feature/step2-constants`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Step 2 (Constants) is complete. PERIODS and SECTORS constants exported from src/constants/options.js. Ready to implement Cockpit API layer.
+Step 3 (Cockpit API Layer) is complete. All API functions implemented in src/api/cockpit.js. Ready to implement custom hooks.
 
 ### Notes
 
-- Constants file created with PERIODS (Q1-Q4) and SECTORS (5 categories)
-- All values match the implementation plan specification
-- Ready to proceed with API client implementation
+- API layer created with 8 functions: fetchDeals, createDeal, updateDeal, deleteDeal, fetchStages, createStage, updateStage, deleteStage
+- All functions handle errors and return JSON responses
+- Uses environment variables VITE_COCKPIT_API_URL and VITE_COCKPIT_API_KEY
 
 ---
 
@@ -30,12 +30,14 @@ Step 2 (Constants) is complete. PERIODS and SECTORS constants exported from src/
 - [x] Step 2: Constants (2026-04-08)
   - Create src/constants/options.js with PERIODS and SECTORS
 
+- [x] Step 3: Cockpit API Layer (2026-04-08)
+  - Create src/api/cockpit.js with all API functions
+
 ---
 
 ## Up Next
 
-- [ ] Step 3: Cockpit API Layer
-  - Create src/api/cockpit.js with all API functions
+- [ ] Step 4: Custom Hooks
 
 - [ ] Step 4: Custom Hooks
   - Create src/hooks/useStages.js
