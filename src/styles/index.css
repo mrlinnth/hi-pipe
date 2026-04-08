@@ -1,0 +1,41 @@
+:root {
+  --bg: #F4F4F0;
+  --surface: #FFFFFF;
+  --border: #E0DED8;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6B65;
+  --text-muted: #9E9E98;
+  --accent: #1A1A18;
+  --radius: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.app {
+  padding: 2rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: var(--text-secondary);
+}
