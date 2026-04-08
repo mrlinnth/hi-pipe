@@ -2,20 +2,20 @@
 
 ## Current
 
-- **Task**: Step 4 - Custom Hooks
+- **Task**: Step 5 - Global State and Filtering Logic
 - **Branch**: `feature/step2-constants`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Step 3 (Cockpit API Layer) is complete. All API functions implemented in src/api/cockpit.js. Ready to implement custom hooks.
+Step 4 (Custom Hooks) is complete. useStages and useDeals hooks implemented. Ready to implement App.jsx with filter logic and URL sync.
 
 ### Notes
 
-- API layer created with 8 functions: fetchDeals, createDeal, updateDeal, deleteDeal, fetchStages, createStage, updateStage, deleteStage
-- All functions handle errors and return JSON responses
-- Uses environment variables VITE_COCKPIT_API_URL and VITE_COCKPIT_API_KEY
+- useStages hook manages stages state with reload, addStage, editStage, removeStage
+- useDeals hook manages deals state with reload, addDeal, editDeal, removeDeal, moveDeal
+- Both hooks auto-fetch on mount and return { data, loading, error, ...actions }
 
 ---
 
@@ -33,15 +33,15 @@ Step 3 (Cockpit API Layer) is complete. All API functions implemented in src/api
 - [x] Step 3: Cockpit API Layer (2026-04-08)
   - Create src/api/cockpit.js with all API functions
 
+- [x] Step 4: Custom Hooks (2026-04-08)
+  - Create src/hooks/useStages.js
+  - Create src/hooks/useDeals.js
+
 ---
 
 ## Up Next
 
-- [ ] Step 4: Custom Hooks
-
-- [ ] Step 4: Custom Hooks
-  - Create src/hooks/useStages.js
-  - Create src/hooks/useDeals.js
+- [ ] Step 5: Global State and Filtering Logic
 
 - [ ] Step 5: Global State and Filtering Logic
   - Implement App.jsx with filter logic and URL sync
