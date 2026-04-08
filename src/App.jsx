@@ -104,10 +104,6 @@ function App() {
     return <div className="loading">Loading...</div>;
   }
 
-  if (dealsError || stagesError) {
-    return <div className="error">Error: {dealsError || stagesError}</div>;
-  }
-
   return (
     <div className="app">
       <header className="app-header">

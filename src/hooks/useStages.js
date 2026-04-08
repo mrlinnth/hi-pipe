@@ -14,7 +14,8 @@ export function useStages() {
       const sorted = result.items.sort((a, b) => a.sort_order - b.sort_order);
       setStages(sorted);
     } catch (err) {
-      setError(err.message);
+      console.error('Failed to fetch stages:', err.message);
+      setStages([]);
     } finally {
       setLoading(false);
     }

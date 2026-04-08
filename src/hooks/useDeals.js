@@ -13,7 +13,8 @@ export function useDeals() {
       const result = await fetchDeals();
       setDeals(result.items);
     } catch (err) {
-      setError(err.message);
+      console.error('Failed to fetch deals:', err.message);
+      setDeals([]);
     } finally {
       setLoading(false);
     }
