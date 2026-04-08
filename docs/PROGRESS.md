@@ -2,20 +2,22 @@
 
 ## Current
 
-- **Task**: Step 5 - Global State and Filtering Logic
-- **Branch**: `feature/step2-constants`
+- **Task**: Step 6 - Components
+- **Branch**: `main`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Step 4 (Custom Hooks) is complete. useStages and useDeals hooks implemented. Ready to implement App.jsx with filter logic and URL sync.
+Step 5 (Global State and Filtering Logic) is complete. App.jsx implemented with filter state, URL sync, and filteredDeals computation. Ready to implement components.
 
 ### Notes
 
-- useStages hook manages stages state with reload, addStage, editStage, removeStage
-- useDeals hook manages deals state with reload, addDeal, editDeal, removeDeal, moveDeal
-- Both hooks auto-fetch on mount and return { data, loading, error, ...actions }
+- App.jsx now manages all global state: deals, stages, active filters, isSettingsOpen
+- Filter state synced with URL query parameters
+- Filtered deals computed based on period, sector, and tag filters
+- Available tags derived from all deals
+- Component structure ready for FilterBar, TotalsBar, Board, DealModal, StageSettings
 
 ---
 
@@ -37,14 +39,14 @@ Step 4 (Custom Hooks) is complete. useStages and useDeals hooks implemented. Rea
   - Create src/hooks/useStages.js
   - Create src/hooks/useDeals.js
 
+- [x] Step 5: Global State and Filtering Logic (2026-04-08)
+  - Implement App.jsx with filter logic and URL sync
+
 ---
 
 ## Up Next
 
-- [ ] Step 5: Global State and Filtering Logic
-
-- [ ] Step 5: Global State and Filtering Logic
-  - Implement App.jsx with filter logic and URL sync
+- [ ] Step 6: Components
 
 - [ ] Step 6: Components
   - Create FilterBar.jsx
