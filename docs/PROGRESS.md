@@ -2,22 +2,22 @@
 
 ## Current
 
-- **Task**: Step 8 - Docker Setup
+- **Task**: Step 9 - Cockpit CMS Setup
 - **Branch**: `main`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Step 7 (Styling) is complete. Comprehensive CSS styling applied with variables, components, and mobile responsive design. Google Fonts (DM Sans & DM Mono) already loaded. Ready to set up Docker configuration.
+Step 8 (Docker Setup) is complete. nginx.conf and docker-compose.yml created. Ready to configure Cockpit CMS collections and API key.
 
 ### Notes
 
-- CSS variables for colors, spacing, shadows, fonts
-- All components styled with industrial/utilitarian design
-- Mobile responsive with modal bottom sheet on small screens
-- Google Fonts (DM Sans & DM Mono) integrated
-- Drag-and-drop visual feedback implemented
+- nginx.conf: Basic config with try_files for client-side routing
+- docker-compose.yml: Two services - hi-pipe (build) and hi-pipe-web (serve)
+- Build runs in Node 20-alpine container
+- Served by Nginx on port 3200
+- Environment variables passed to build process
 
 ---
 
@@ -54,11 +54,15 @@ Step 7 (Styling) is complete. Comprehensive CSS styling applied with variables, 
 - [x] Step 7: Styling (2026-04-08)
   - Apply comprehensive CSS styling
 
+- [x] Step 8: Docker Setup (2026-04-08)
+  - Create nginx.conf
+  - Create docker-compose.yml
+
 ---
 
 ## Up Next
 
-- [ ] Step 8: Docker Setup
+- [ ] Step 9: Cockpit CMS Setup
 
 - [ ] Step 6: Components
   - Create FilterBar.jsx
