@@ -2,24 +2,20 @@
 
 ## Current
 
-- **Task**: Step 2 - Constants
-- **Branch**: `feature/project-setup`
+- **Task**: Step 3 - Cockpit API Layer
+- **Branch**: `feature/step2-constants`
 - **Started**: 2026-04-08
 - **Last Updated**: 2026-04-08
 
 ### Status
 
-Project setup (Step 1) is complete. Vite + React initialized with all dependencies installed. Dev server verified working. Ready to implement constants file.
+Step 2 (Constants) is complete. PERIODS and SECTORS constants exported from src/constants/options.js. Ready to implement Cockpit API layer.
 
 ### Notes
 
-- Project initialized with Vite + React 18
-- DnD Kit dependencies installed (@dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities)
-- Directory structure created: src/{api,components,hooks,constants,styles}/
-- Environment variables configured (.env.example created)
-- Google Fonts added (DM Sans, DM Mono)
-- Basic styling with CSS variables implemented
-- Dev server confirmed working on localhost:5173
+- Constants file created with PERIODS (Q1-Q4) and SECTORS (5 categories)
+- All values match the implementation plan specification
+- Ready to proceed with API client implementation
 
 ---
 
@@ -31,12 +27,12 @@ Project setup (Step 1) is complete. Vite + React initialized with all dependenci
   - Create .env.example file
   - Verify dev server works
 
+- [x] Step 2: Constants (2026-04-08)
+  - Create src/constants/options.js with PERIODS and SECTORS
+
 ---
 
 ## Up Next
-
-- [ ] Step 2: Constants
-  - Create src/constants/options.js with PERIODS and SECTORS
 
 - [ ] Step 3: Cockpit API Layer
   - Create src/api/cockpit.js with all API functions
