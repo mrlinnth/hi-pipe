@@ -6,20 +6,24 @@ import { TotalsBar } from './components/TotalsBar';
 import { Board } from './components/Board';
 import { DealModal } from './components/DealModal';
 import { StageSettings } from './components/StageSettings';
+import { ConnectionSettings } from './components/ConnectionSettings';
 
 function App() {
-  const { deals, loading: dealsLoading, error: dealsError, reload: reloadDeals, addDeal, editDeal, removeDeal, moveDeal } = useDeals();
-  const { stages, loading: stagesLoading, error: stagesError, reload: reloadStages, addStage, editStage, removeStage } = useStages();
-  
+  const { deals, loading: dealsLoading, error: dealsError, reload: reloadDeals, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
+  const { stages, loading: stagesLoading, error: stagesError, reload: reloadStages, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
+
+  const isOnline = dealsOnline && stagesOnline;
+
   const [activeFilters, setActiveFilters] = useState({
     period: null,
     sector: null,
     tag: null,
   });
-  
+
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,7 +57,7 @@ function App() {
 
   const availableTags = Array.from(
     new Set(
-      deals.flatMap(deal => 
+      deals.flatMap(deal =>
         deal.tags ? deal.tags.split(',').map(t => t.trim()) : []
       )
     )
@@ -111,9 +115,15 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>hi-pipe</h1>
-        <button className="btn-settings" onClick={() => setIsSettingsOpen(true)}>⚙️ Settings</button>
+        <div className="header-actions">
+          <span className={`connection-badge ${isOnline ? 'online' : 'offline'}`}>
+            {isOnline ? 'Online' : 'Offline'}
+          </span>
+          <button className="btn-settings" onClick={() => setIsConnectionOpen(true)}>API</button>
+          <button className="btn-settings" onClick={() => setIsSettingsOpen(true)}>⚙️ Stages</button>
+        </div>
       </header>
-      
+
       <FilterBar
         activePeriod={activeFilters.period}
         activeSector={activeFilters.sector}
@@ -123,16 +133,16 @@ function App() {
         onTagChange={(value) => handleFilterChange('tag', value)}
         availableTags={availableTags}
       />
-      
+
       <TotalsBar deals={filteredDeals} />
-      
+
       <Board
         stages={stages}
         deals={filteredDeals}
         onDealClick={handleDealClick}
         onMoveDeal={moveDeal}
       />
-      
+
       <button className="btn-add-deal" onClick={() => setIsAddModalOpen(true)}>+ Add Deal</button>
 
       {(selectedDeal !== null || isAddModalOpen) && (
@@ -144,7 +154,7 @@ function App() {
           onClose={() => { setSelectedDeal(null); setIsAddModalOpen(false); }}
         />
       )}
-      
+
       {isSettingsOpen && (
         <StageSettings
           stages={stages}
@@ -154,6 +164,13 @@ function App() {
           onReorder={handleStageReorder}
           onClose={() => setIsSettingsOpen(false)}
           dealCounts={dealCounts}
+        />
+      )}
+
+      {isConnectionOpen && (
+        <ConnectionSettings
+          isOnline={isOnline}
+          onClose={() => setIsConnectionOpen(false)}
         />
       )}
     </div>
