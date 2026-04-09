@@ -2,22 +2,30 @@
 
 ## Current
 
-- **Task**: Step 9 - Cockpit CMS Setup
+- **Task**: Step 10 - Build Order Verification
 - **Branch**: `main`
-- **Started**: 2026-04-08
-- **Last Updated**: 2026-04-08
+- **Started**: 2026-04-09
+- **Last Updated**: 2026-04-09
 
 ### Status
 
-Step 8 (Docker Setup) is complete. nginx.conf and docker-compose.yml created. Ready to configure Cockpit CMS collections and API key.
+Step 10 complete. All critical systems verified:
+
+- Dev server works (Vite on port 5173)
+- API layer fixed for Cockpit CMS (correct format: `{ data: ... }` for POST, no wrapper for GET)
+- Hooks work correctly (stages and deals load from Cockpit)
+- Build works: `npm run build` generates dist/ (194KB JS, 9KB CSS)
+- Docker Compose works: Nginx serves app on port 3200
+
+**Bug fixed**: API layer required `{ data: wrapper }` format for create/update operations.
+
+**Manual browser testing needed**: UI components (Kanban board, drag-drop, modals, filters)
 
 ### Notes
 
-- nginx.conf: Basic config with try_files for client-side routing
-- docker-compose.yml: Two services - hi-pipe (build) and hi-pipe-web (serve)
-- Build runs in Node 20-alpine container
-- Served by Nginx on port 3200
-- Environment variables passed to build process
+- Step 9 complete: Stages and Deals collections created in Cockpit
+- API key configured with read/write access
+- CORS configured for production domain
 
 ---
 
@@ -58,19 +66,33 @@ Step 8 (Docker Setup) is complete. nginx.conf and docker-compose.yml created. Re
   - Create nginx.conf
   - Create docker-compose.yml
 
----
-
-## Up Next
-
-- [ ] Step 9: Cockpit CMS Setup
+- [x] Step 9: Cockpit CMS Setup (2026-04-09)
   - Create Stages collection in Cockpit
   - Create Deals collection in Cockpit
   - Configure API key
   - Configure CORS
 
-- [ ] Step 10: Build Order Verification
-  - Test 18-step build order
-  - Verify each step works end-to-end
+- [x] Step 10: Build Order Verification (2026-04-09)
+  - All backend/API systems verified working
+
+---
+
+## Up Next
+
+- [x] Step 9: Cockpit CMS Setup (2026-04-09)
+  - Create Stages collection in Cockpit
+  - Create Deals collection in Cockpit
+  - Configure API key
+  - Configure CORS
+
+- [x] Step 10: Build Order Verification (2026-04-09)
+  - [x] 1. Verify npm run dev works
+  - [x] 2. Test constants loading
+  - [x] 3. Test API functions (fixed: use { data: ... } wrapper)
+  - [x] 4. Test useStages hook
+  - [x] 5. Test useDeals hook
+  - [x] 17. Test npm run build
+  - [x] 18. Test Docker Compose (port 3200)
 
 ---
 
