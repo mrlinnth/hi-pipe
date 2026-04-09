@@ -18,6 +18,7 @@ function App() {
   });
   
   const [selectedDeal, setSelectedDeal] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
@@ -76,11 +77,13 @@ function App() {
       await addDeal(data);
     }
     setSelectedDeal(null);
+    setIsAddModalOpen(false);
   };
 
   const handleDealDelete = async (id) => {
     await removeDeal(id);
     setSelectedDeal(null);
+    setIsAddModalOpen(false);
   };
 
   const dealCounts = stages.reduce((acc, stage) => {
@@ -130,15 +133,15 @@ function App() {
         onMoveDeal={moveDeal}
       />
       
-      <button className="btn-add-deal" onClick={() => setSelectedDeal(null)}>+ Add Deal</button>
-      
-      {selectedDeal !== null && (
+      <button className="btn-add-deal" onClick={() => setIsAddModalOpen(true)}>+ Add Deal</button>
+
+      {(selectedDeal !== null || isAddModalOpen) && (
         <DealModal
           deal={selectedDeal}
           stages={stages}
           onSave={handleDealSave}
           onDelete={handleDealDelete}
-          onClose={() => setSelectedDeal(null)}
+          onClose={() => { setSelectedDeal(null); setIsAddModalOpen(false); }}
         />
       )}
       
