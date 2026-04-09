@@ -1,10 +1,15 @@
-const BASE_URL = import.meta.env.VITE_COCKPIT_API_URL;
-const API_KEY = import.meta.env.VITE_COCKPIT_API_KEY;
+import { getApiConfig } from '../storage';
 
-const headers = {
-  'Content-Type': 'application/json',
-  'api-key': API_KEY,
-};
+function getBaseUrl() {
+  return getApiConfig().url;
+}
+
+function getHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'api-key': getApiConfig().key,
+  };
+}
 
 function getItems(result) {
   if (Array.isArray(result)) return result;
@@ -12,16 +17,16 @@ function getItems(result) {
 }
 
 export async function fetchDeals() {
-  const res = await fetch(`${BASE_URL}/content/items/deals`, { headers });
+  const res = await fetch(`${getBaseUrl()}/content/items/deals`, { headers: getHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch deals: ${res.status}`);
   const result = await res.json();
   return { items: getItems(result), total: getItems(result).length };
 }
 
 export async function createDeal(data) {
-  const res = await fetch(`${BASE_URL}/content/item/deals`, {
+  const res = await fetch(`${getBaseUrl()}/content/item/deals`, {
     method: 'POST',
-    headers,
+    headers: getHeaders(),
     body: JSON.stringify({ data }),
   });
   if (!res.ok) throw new Error(`Failed to create deal: ${res.status}`);
@@ -30,9 +35,9 @@ export async function createDeal(data) {
 
 export async function updateDeal(id, data) {
   data._id = id;
-  const res = await fetch(`${BASE_URL}/content/item/deals`, {
+  const res = await fetch(`${getBaseUrl()}/content/item/deals`, {
     method: 'POST',
-    headers,
+    headers: getHeaders(),
     body: JSON.stringify({ data }),
   });
   if (!res.ok) throw new Error(`Failed to update deal: ${res.status}`);
@@ -40,25 +45,25 @@ export async function updateDeal(id, data) {
 }
 
 export async function deleteDeal(id) {
-  const res = await fetch(`${BASE_URL}/content/item/deals/${id}`, {
+  const res = await fetch(`${getBaseUrl()}/content/item/deals/${id}`, {
     method: 'DELETE',
-    headers,
+    headers: getHeaders(),
   });
   if (!res.ok) throw new Error(`Failed to delete deal: ${res.status}`);
   return res.json();
 }
 
 export async function fetchStages() {
-  const res = await fetch(`${BASE_URL}/content/items/stages`, { headers });
+  const res = await fetch(`${getBaseUrl()}/content/items/stages`, { headers: getHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch stages: ${res.status}`);
   const result = await res.json();
   return { items: getItems(result), total: getItems(result).length };
 }
 
 export async function createStage(data) {
-  const res = await fetch(`${BASE_URL}/content/item/stages`, {
+  const res = await fetch(`${getBaseUrl()}/content/item/stages`, {
     method: 'POST',
-    headers,
+    headers: getHeaders(),
     body: JSON.stringify({ data }),
   });
   if (!res.ok) throw new Error(`Failed to create stage: ${res.status}`);
@@ -67,9 +72,9 @@ export async function createStage(data) {
 
 export async function updateStage(id, data) {
   data._id = id;
-  const res = await fetch(`${BASE_URL}/content/item/stages`, {
+  const res = await fetch(`${getBaseUrl()}/content/item/stages`, {
     method: 'POST',
-    headers,
+    headers: getHeaders(),
     body: JSON.stringify({ data }),
   });
   if (!res.ok) throw new Error(`Failed to update stage: ${res.status}`);
@@ -77,9 +82,9 @@ export async function updateStage(id, data) {
 }
 
 export async function deleteStage(id) {
-  const res = await fetch(`${BASE_URL}/content/item/stages/${id}`, {
+  const res = await fetch(`${getBaseUrl()}/content/item/stages/${id}`, {
     method: 'DELETE',
-    headers,
+    headers: getHeaders(),
   });
   if (!res.ok) throw new Error(`Failed to delete stage: ${res.status}`);
   return res.json();
