@@ -180,7 +180,6 @@ body {
   flex-direction: column;
   background: var(--surface);
   border-radius: var(--radius) var(--radius) 0 0;
-  overflow: hidden;
   box-shadow: var(--shadow);
 }
 
@@ -191,6 +190,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .column-title {
@@ -238,7 +238,12 @@ body {
 }
 
 .deal-card.dragging {
-  opacity: 0.5;
+  opacity: 0.4;
+}
+
+.deal-card.dragging-overlay {
+  box-shadow: var(--shadow-lg);
+  cursor: grabbing;
 }
 
 .deal-name {

@@ -1,9 +1,18 @@
-import { DndContext } from '@dnd-kit/core';
+import { useState } from 'react';
+import { DndContext, DragOverlay } from '@dnd-kit/core';
 import { Column } from './Column';
+import { DealCard } from './DealCard';
 
 export function Board({ stages, deals, onDealClick, onMoveDeal }) {
+  const [activeId, setActiveId] = useState(null);
+
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    setActiveId(null);
     if (!over) return;
 
     const deal = deals.find(d => d._id === active.id);
@@ -12,8 +21,10 @@ export function Board({ stages, deals, onDealClick, onMoveDeal }) {
     }
   };
 
+  const activeDeal = activeId ? deals.find(d => d._id === activeId) : null;
+
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="board">
         {stages.map(stage => (
           <Column
@@ -24,6 +35,9 @@ export function Board({ stages, deals, onDealClick, onMoveDeal }) {
           />
         ))}
       </div>
+      <DragOverlay>
+        {activeDeal ? <DealCard deal={activeDeal} onClick={() => {}} isDraggingOverlay /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }

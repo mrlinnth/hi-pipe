@@ -1,22 +1,23 @@
 import { useDraggable } from '@dnd-kit/core';
 
-export function DealCard({ deal, onClick }) {
+export function DealCard({ deal, onClick, isDraggingOverlay = false }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal._id,
+    disabled: isDraggingOverlay,
   });
 
-  const style = transform ? {
+  const style = !isDraggingOverlay && transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined;
 
   return (
     <div
-      ref={setNodeRef}
+      ref={isDraggingOverlay ? undefined : setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      className={`deal-card ${isDragging ? 'dragging' : ''}`}
-      onClick={(e) => {
+      {...(isDraggingOverlay ? {} : listeners)}
+      {...(isDraggingOverlay ? {} : attributes)}
+      className={`deal-card ${isDragging && !isDraggingOverlay ? 'dragging' : ''} ${isDraggingOverlay ? 'dragging-overlay' : ''}`}
+      onClick={() => {
         if (!isDragging) onClick(deal);
       }}
     >
