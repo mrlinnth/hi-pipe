@@ -10,7 +10,7 @@ import { WelcomeModal } from './components/WelcomeModal';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
 
 function App() {
-  const { deals, loading: dealsLoading, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
+  const { deals, loading: dealsLoading, saving, deleting, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
   const { stages, loading: stagesLoading, error: stagesError, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
 
   const isOnline = dealsOnline && stagesOnline;
@@ -26,11 +26,12 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('stages');
   const [sectors, setSectors] = useState(() => getSectors());
-  const [showTags, setShowTags] = useState(true);
+  const [showTags, setShowTags] = useState(false);
   const [compactCards, setCompactCards] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(
     () => !localStorage.getItem('hi_pipe_welcomed')
   );
+  const [dealModalError, setDealModalError] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -82,19 +83,29 @@ function App() {
   };
 
   const handleDealSave = async (data) => {
-    if (selectedDeal) {
-      await editDeal(selectedDeal._id, data);
-    } else {
-      await addDeal(data);
+    setDealModalError(null);
+    try {
+      if (selectedDeal) {
+        await editDeal(selectedDeal._id, data);
+      } else {
+        await addDeal(data);
+      }
+      setSelectedDeal(null);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      setDealModalError(err.message);
     }
-    setSelectedDeal(null);
-    setIsAddModalOpen(false);
   };
 
   const handleDealDelete = async (id) => {
-    await removeDeal(id);
-    setSelectedDeal(null);
-    setIsAddModalOpen(false);
+    setDealModalError(null);
+    try {
+      await removeDeal(id);
+      setSelectedDeal(null);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      setDealModalError(err.message);
+    }
   };
 
   const dealCounts = stages.reduce((acc, stage) => {
@@ -203,7 +214,10 @@ function App() {
           sectors={sectors}
           onSave={handleDealSave}
           onDelete={handleDealDelete}
-          onClose={() => { setSelectedDeal(null); setIsAddModalOpen(false); }}
+          onClose={() => { setSelectedDeal(null); setIsAddModalOpen(false); setDealModalError(null); }}
+          saving={saving}
+          deleting={deleting}
+          error={dealModalError}
         />
       )}
 

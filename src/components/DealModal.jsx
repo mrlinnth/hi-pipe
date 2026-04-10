@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PERIODS } from '../constants/options';
 
-export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) {
+export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, saving = false, deleting = false, error = null }) {
   const [formData, setFormData] = useState(deal || {
     name: '',
     value: 0,
@@ -14,12 +14,13 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) 
   const [tags, setTags] = useState(deal?.tags ? deal.tags.split(',').map(t => t.trim()) : []);
   const [tagInput, setTagInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (saving || deleting) {
+      return;
+    }
     if (!formData.name.trim() || formData.value === '') {
-      setError('Name and Value are required');
       return;
     }
     onSave({
@@ -166,17 +167,37 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) 
                 {showDeleteConfirm ? (
                   <>
                     <span className="delete-confirm">Delete this deal?</span>
-                    <button type="button" className="btn-delete-confirm" onClick={() => onDelete(deal._id)}>Yes</button>
+                    <button 
+                      type="button" 
+                      className="btn-delete-confirm" 
+                      onClick={() => onDelete(deal._id)}
+                      disabled={deleting}
+                    >
+                      {deleting ? 'Deleting...' : 'Yes'}
+                    </button>
                     <button type="button" className="btn-delete-cancel" onClick={() => setShowDeleteConfirm(false)}>No</button>
                   </>
                 ) : (
-                  <button type="button" className="btn-delete" onClick={() => setShowDeleteConfirm(true)}>Delete</button>
+                  <button 
+                    type="button" 
+                    className="btn-delete" 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={deleting}
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             )}
             <div className="modal-actions" style={{ marginLeft: 'auto' }}>
               <button type="button" className="btn-cancel" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn-save">Save</button>
+              <button 
+                type="submit" 
+                className={`btn-save ${saving ? 'btn-loading' : ''}`}
+                disabled={saving || deleting}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
             </div>
           </div>
         </form>
