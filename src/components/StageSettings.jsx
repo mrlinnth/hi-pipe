@@ -96,8 +96,6 @@ export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onCl
           <button type="submit" className="btn-add">Add</button>
         </div>
       </form>
-
-      {!asPanel && <button className="btn-close" onClick={onClose}>Close</button>}
     </>
   );
 
@@ -106,6 +104,7 @@ export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onCl
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose}>&times;</button>
         <h2>Stage Settings</h2>
         {content}
       </div>

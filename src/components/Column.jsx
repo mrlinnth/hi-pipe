@@ -13,9 +13,8 @@ export function Column({ stage, deals, onDealClick }) {
   return (
     <div ref={setNodeRef} className="column">
       <div className="column-header" style={{ backgroundColor: stage.color }}>
-        <div className="column-title">{stage.name}</div>
+        <div className="column-title">{stage.name} <span className="column-count">{deals.length}</span></div>
         <div className="column-stats">
-          <span className="column-count">{deals.length}</span>
           <span className="column-value">{formatter.format(totalValue)}</span>
         </div>
       </div>

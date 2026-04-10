@@ -69,7 +69,7 @@ export function ConnectionSettings({ onClose, isOnline, asPanel, connectionError
           </button>
           <div className="modal-actions">
             <button type="button" className="btn-cancel" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-save">Save &amp; Reconnect</button>
+            <button type="submit" className="btn-save">Save</button>
           </div>
         </div>
       </form>
@@ -81,6 +81,7 @@ export function ConnectionSettings({ onClose, isOnline, asPanel, connectionError
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose}>&times;</button>
         <h2>API Connection</h2>
         {content}
       </div>

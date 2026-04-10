@@ -6,8 +6,8 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) 
     name: '',
     value: 0,
     stage: stages[0]?.slug || '',
-    period: '',
-    sector: '',
+    period: PERIODS[0] || '',
+    sector: sectors[0] || '',
     notes: '',
     tags: '',
   });
@@ -159,7 +159,7 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) 
               ))}
             </div>
           </div>
-          
+
           <div className="modal-footer">
             {deal && (
               <div className="delete-section">
@@ -174,7 +174,7 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) 
                 )}
               </div>
             )}
-            <div className="modal-actions">
+            <div className="modal-actions" style={{ marginLeft: 'auto' }}>
               <button type="button" className="btn-cancel" onClick={onClose}>Cancel</button>
               <button type="submit" className="btn-save">Save</button>
             </div>

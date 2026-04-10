@@ -65,8 +65,8 @@ body {
 }
 
 .brand-icon {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 8px;
 }
 
@@ -277,6 +277,13 @@ body {
   box-shadow: var(--shadow);
 }
 
+@media (min-width: 1024px) {
+  .column {
+    max-width: none;
+    flex: 1;
+  }
+}
+
 .column-header {
   padding: 0.75rem 1rem;
   color: white;
@@ -429,6 +436,29 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  color: var(--text-primary);
 }
 
 .modal-content h2 {

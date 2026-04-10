@@ -10,8 +10,8 @@ import { WelcomeModal } from './components/WelcomeModal';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
 
 function App() {
-  const { deals, loading: dealsLoading, error: dealsError, reload: reloadDeals, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
-  const { stages, loading: stagesLoading, error: stagesError, reload: reloadStages, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
+  const { deals, loading: dealsLoading, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
+  const { stages, loading: stagesLoading, error: stagesError, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
 
   const isOnline = dealsOnline && stagesOnline;
 

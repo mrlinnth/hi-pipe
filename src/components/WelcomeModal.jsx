@@ -4,7 +4,7 @@ export function WelcomeModal({ onUseApi, onUseOffline }) {
       <div className="modal-content welcome-modal" onClick={(e) => e.stopPropagation()}>
         <h2>Welcome to Hi Pipe</h2>
         <p className="settings-hint">
-          Hi Pipe is a lightweight deal pipeline. Choose how you'd like to store your data:
+          Hi Pipe is a lightweight deal pipeline. Choose how you&apos;d like to store your data:
         </p>
 
         <div className="welcome-modes">
