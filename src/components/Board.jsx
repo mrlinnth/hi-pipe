@@ -3,7 +3,7 @@ import { DndContext, DragOverlay } from '@dnd-kit/core';
 import { Column } from './Column';
 import { DealCard } from './DealCard';
 
-export function Board({ stages, deals, onDealClick, onMoveDeal }) {
+export function Board({ stages, deals, onDealClick, onMoveDeal, showTags, compactCards }) {
   const [activeId, setActiveId] = useState(null);
 
   const handleDragStart = (event) => {
@@ -32,11 +32,13 @@ export function Board({ stages, deals, onDealClick, onMoveDeal }) {
             stage={stage}
             deals={deals.filter(d => d.stage === stage.slug)}
             onDealClick={onDealClick}
+            showTags={showTags}
+            compactCards={compactCards}
           />
         ))}
       </div>
       <DragOverlay>
-        {activeDeal ? <DealCard deal={activeDeal} onClick={() => {}} isDraggingOverlay /> : null}
+        {activeDeal ? <DealCard deal={activeDeal} onClick={() => {}} isDraggingOverlay={true} showTags={showTags} compactCards={compactCards} /> : null}
       </DragOverlay>
     </DndContext>
   );

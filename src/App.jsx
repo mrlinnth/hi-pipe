@@ -26,6 +26,8 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('stages');
   const [sectors, setSectors] = useState(() => getSectors());
+  const [showTags, setShowTags] = useState(true);
+  const [compactCards, setCompactCards] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(
     () => !localStorage.getItem('hi_pipe_welcomed')
   );
@@ -181,13 +183,15 @@ function App() {
         sectors={sectors}
       />
 
-      <TotalsBar deals={filteredDeals} />
+      <TotalsBar deals={filteredDeals} showTags={showTags} setShowTags={setShowTags} compactCards={compactCards} setCompactCards={setCompactCards} />
 
       <Board
         stages={stages}
         deals={filteredDeals}
         onDealClick={handleDealClick}
         onMoveDeal={moveDeal}
+        showTags={showTags}
+        compactCards={compactCards}
       />
 
       <button className="btn-add-deal" onClick={() => setIsAddModalOpen(true)}>+ Add Deal</button>

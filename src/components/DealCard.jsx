@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 
-export function DealCard({ deal, onClick, isDraggingOverlay = false }) {
+export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = true, compactCards = false }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal._id,
     disabled: isDraggingOverlay,
@@ -16,7 +16,7 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false }) {
       style={style}
       {...(isDraggingOverlay ? {} : listeners)}
       {...(isDraggingOverlay ? {} : attributes)}
-      className={`deal-card ${isDragging && !isDraggingOverlay ? 'dragging' : ''} ${isDraggingOverlay ? 'dragging-overlay' : ''}`}
+      className={`deal-card ${isDragging && !isDraggingOverlay ? 'dragging' : ''} ${isDraggingOverlay ? 'dragging-overlay' : ''} ${compactCards ? 'compact' : ''}`}
       onClick={() => {
         if (!isDragging) onClick(deal);
       }}
@@ -33,7 +33,7 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false }) {
         <span className="badge badge-period">{deal.period}</span>
         <span className="badge badge-sector">{deal.sector}</span>
       </div>
-      {deal.tags && (
+      {showTags && deal.tags && (
         <div className="deal-tags">
           {deal.tags.split(',').map((tag, index) => (
             <span key={index} className="tag-chip">
