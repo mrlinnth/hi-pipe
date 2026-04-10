@@ -1,7 +1,7 @@
 # Hi Pipe
 
 ## Live Application
-Access Hi Pipe at: [pipe.hiyan.cloud](https://pipe.hiyan.cloud)
+Access Hi Pipe at: [pipeline.hiyan.cloud](https://pipeline.hiyan.cloud)
 
 ## How to Use
 1. Visit the app URL above
