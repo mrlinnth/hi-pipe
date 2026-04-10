@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { PERIODS } from '../constants/options';
 
-const SECTORS = [
-  'Banking',
-  'Insurance / Healthcare',
-  'Microfinance / Edu / Hotel',
-  'Manufacture / Retail',
-  'Telecom / Infra / Media',
-];
-
-export function DealModal({ deal, stages, onSave, onDelete, onClose }) {
+export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose }) {
   const [formData, setFormData] = useState(deal || {
     name: '',
     value: 0,
@@ -128,9 +120,12 @@ export function DealModal({ deal, stages, onSave, onDelete, onClose }) {
               value={formData.sector}
               onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
             >
-              {SECTORS.map(sector => (
-                <option key={sector} value={sector}>{sector}</option>
-              ))}
+              {sectors.length === 0
+                ? <option disabled value="">No sectors configured</option>
+                : sectors.map(sector => (
+                    <option key={sector} value={sector}>{sector}</option>
+                  ))
+              }
             </select>
           </div>
           

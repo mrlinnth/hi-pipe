@@ -5,9 +5,9 @@ import { FilterBar } from './components/FilterBar';
 import { TotalsBar } from './components/TotalsBar';
 import { Board } from './components/Board';
 import { DealModal } from './components/DealModal';
-import { StageSettings } from './components/StageSettings';
-import { ConnectionSettings } from './components/ConnectionSettings';
+import { SettingsPanel } from './components/SettingsPanel';
 import { WelcomeModal } from './components/WelcomeModal';
+import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
 
 function App() {
   const { deals, loading: dealsLoading, error: dealsError, reload: reloadDeals, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
@@ -24,7 +24,8 @@ function App() {
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isConnectionOpen, setIsConnectionOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('stages');
+  const [sectors, setSectors] = useState(() => getSectors());
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(
     () => !localStorage.getItem('hi_pipe_welcomed')
   );
@@ -99,10 +100,38 @@ function App() {
     return acc;
   }, {});
 
+  const openSettings = (tab = 'stages') => {
+    setSettingsTab(tab);
+    setIsSettingsOpen(true);
+  };
+
+  const handleSectorAdd = (name) => {
+    const next = [...sectors, name];
+    setSectors(next);
+    saveSectors(next);
+  };
+
+  const handleSectorRename = (i, name) => {
+    const next = sectors.map((s, j) => j === i ? name : s);
+    setSectors(next);
+    saveSectors(next);
+  };
+
+  const handleSectorDelete = (i) => {
+    const next = sectors.filter((_, j) => j !== i);
+    setSectors(next);
+    saveSectors(next);
+  };
+
+  const handleSectorReset = () => {
+    resetSectors();
+    setSectors(DEFAULT_SECTORS);
+  };
+
   const handleWelcomeApi = () => {
     localStorage.setItem('hi_pipe_welcomed', '1');
     setIsWelcomeOpen(false);
-    setIsConnectionOpen(true);
+    openSettings('connection');
   };
 
   const handleWelcomeOffline = () => {
@@ -137,8 +166,7 @@ function App() {
           <span className={`connection-badge ${isOnline ? 'online' : 'offline'}`}>
             {isOnline ? 'Online' : 'Offline'}
           </span>
-          <button className="btn-settings" onClick={() => setIsConnectionOpen(true)}>API</button>
-          <button className="btn-settings" onClick={() => setIsSettingsOpen(true)}>⚙️ Stages</button>
+          <button className="btn-settings" onClick={() => openSettings('stages')} aria-label="Settings">⚙️</button>
         </div>
       </header>
 
@@ -150,6 +178,7 @@ function App() {
         onSectorChange={(value) => handleFilterChange('sector', value)}
         onTagChange={(value) => handleFilterChange('tag', value)}
         availableTags={availableTags}
+        sectors={sectors}
       />
 
       <TotalsBar deals={filteredDeals} />
@@ -167,6 +196,7 @@ function App() {
         <DealModal
           deal={selectedDeal}
           stages={stages}
+          sectors={sectors}
           onSave={handleDealSave}
           onDelete={handleDealDelete}
           onClose={() => { setSelectedDeal(null); setIsAddModalOpen(false); }}
@@ -174,21 +204,21 @@ function App() {
       )}
 
       {isSettingsOpen && (
-        <StageSettings
+        <SettingsPanel
+          initialTab={settingsTab}
           stages={stages}
           onAdd={addStage}
           onEdit={editStage}
           onDelete={removeStage}
           onReorder={handleStageReorder}
-          onClose={() => setIsSettingsOpen(false)}
           dealCounts={dealCounts}
-        />
-      )}
-
-      {isConnectionOpen && (
-        <ConnectionSettings
+          sectors={sectors}
+          onSectorAdd={handleSectorAdd}
+          onSectorRename={handleSectorRename}
+          onSectorDelete={handleSectorDelete}
+          onSectorReset={handleSectorReset}
           isOnline={isOnline}
-          onClose={() => setIsConnectionOpen(false)}
+          onClose={() => setIsSettingsOpen(false)}
         />
       )}
 

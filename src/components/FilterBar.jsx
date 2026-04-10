@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { PERIODS } from '../constants/options';
 
-const SECTORS = [
-  'Banking',
-  'Insurance / Healthcare',
-  'Microfinance / Edu / Hotel',
-  'Manufacture / Retail',
-  'Telecom / Infra / Media',
-];
-
-export function FilterBar({ activePeriod, activeSector, activeTag, onPeriodChange, onSectorChange, onTagChange, availableTags }) {
+export function FilterBar({ activePeriod, activeSector, activeTag, onPeriodChange, onSectorChange, onTagChange, availableTags, sectors }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const activeChips = [
@@ -50,7 +42,7 @@ export function FilterBar({ activePeriod, activeSector, activeTag, onPeriodChang
             ))}
           </div>
           <div className="filter-group">
-            {['All', ...SECTORS].map(sector => (
+            {['All', ...sectors].map(sector => (
               <button
                 key={sector}
                 className={`filter-pill ${activeSector === (sector === 'All' ? null : sector) ? 'active' : ''}`}

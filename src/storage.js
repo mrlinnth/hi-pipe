@@ -1,9 +1,18 @@
 const KEYS = {
-  API_URL: 'hipipe_api_url',
-  API_KEY: 'hipipe_api_key',
-  DEALS:   'hipipe_deals',
-  STAGES:  'hipipe_stages',
+  API_URL:  'hipipe_api_url',
+  API_KEY:  'hipipe_api_key',
+  DEALS:    'hipipe_deals',
+  STAGES:   'hipipe_stages',
+  SECTORS:  'hipipe_sectors',
 };
+
+export const DEFAULT_SECTORS = [
+  'Banking',
+  'Insurance / Healthcare',
+  'Microfinance / Edu / Hotel',
+  'Manufacture / Retail',
+  'Telecom / Infra / Media',
+];
 
 export const DEFAULT_STAGES = [
   { _id: 'local_default_1', name: 'Lead',       slug: 'lead',       color: '#6366F1', sort_order: 1 },
@@ -119,4 +128,18 @@ export function localUpdateStage(id, data) {
 
 export function localDeleteStage(id) {
   setCachedStages(getCachedStages().filter(s => s._id !== id));
+}
+
+// --- Sectors ---
+
+export function getSectors() {
+  return readCache(KEYS.SECTORS) ?? DEFAULT_SECTORS;
+}
+
+export function saveSectors(items) {
+  writeCache(KEYS.SECTORS, items);
+}
+
+export function resetSectors() {
+  localStorage.removeItem(KEYS.SECTORS);
 }
