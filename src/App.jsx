@@ -114,7 +114,10 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>hi-pipe</h1>
+        <div className="brand">
+          <img src="/icon-192.png" alt="Hi Pipe" className="brand-icon" />
+          <h1><span className="brand-hi">Hi</span> Pipe</h1>
+        </div>
         <div className="header-actions">
           <span className={`connection-badge ${isOnline ? 'online' : 'offline'}`}>
             {isOnline ? 'Online' : 'Offline'}

@@ -5,7 +5,8 @@
   --text-primary: #1A1A18;
   --text-secondary: #6B6B65;
   --text-muted: #9E9E98;
-  --accent: #1A1A18;
+  --brand: #2d3a50;
+  --accent: #2d3a50;
   --radius: 6px;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
   --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
@@ -57,9 +58,25 @@ body {
   background: var(--surface);
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
 .app-header h1 {
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.brand-hi {
+  color: var(--brand);
 }
 
 .btn-settings {
@@ -592,7 +609,12 @@ body {
 .btn-save:hover,
 .btn-add:hover,
 .btn-save-small:hover {
-  background: #333;
+  background: #1e2a3a;
+}
+
+.modal-actions .btn-cancel,
+.modal-actions .btn-save {
+  flex: 1;
 }
 
 /* Stage Settings */
