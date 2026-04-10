@@ -218,6 +218,7 @@ function App() {
           onSectorDelete={handleSectorDelete}
           onSectorReset={handleSectorReset}
           isOnline={isOnline}
+          connectionError={stagesError}
           onClose={() => setIsSettingsOpen(false)}
         />
       )}

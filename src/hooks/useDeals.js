@@ -28,6 +28,7 @@ export function useDeals() {
       setIsOnline(true);
     } catch (err) {
       console.error('Failed to fetch deals:', err.message);
+      setError(err.message);
       setDeals(getCachedDeals());
       setIsOnline(false);
     } finally {

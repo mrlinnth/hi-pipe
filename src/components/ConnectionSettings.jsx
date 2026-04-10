@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { saveApiConfig, clearApiConfig } from '../storage';
 
-export function ConnectionSettings({ onClose, isOnline, asPanel }) {
+export function ConnectionSettings({ onClose, isOnline, asPanel, connectionError }) {
   const [url, setUrl] = useState(() => localStorage.getItem('hipipe_api_url') ?? '');
   const [key, setKey] = useState(() => localStorage.getItem('hipipe_api_key') ?? '');
   const [saved, setSaved] = useState(false);
@@ -33,6 +33,10 @@ export function ConnectionSettings({ onClose, isOnline, asPanel }) {
         {isOnline ? 'Connected to Cockpit' : 'Offline — using local storage'}
       </div>
 
+      {!isOnline && connectionError && (
+        <div className="settings-error">{connectionError}</div>
+      )}
+
       {saved && <div className="settings-saved">Saved. Reloading…</div>}
 
       <form onSubmit={handleSave}>
@@ -40,7 +44,7 @@ export function ConnectionSettings({ onClose, isOnline, asPanel }) {
           <label htmlFor="cs-url">Cockpit API URL</label>
           <input
             id="cs-url"
-            type="url"
+            type="text"
             value={url}
             placeholder={import.meta.env.VITE_COCKPIT_API_URL || 'https://your-cockpit.example.com/api'}
             onChange={(e) => setUrl(e.target.value)}
