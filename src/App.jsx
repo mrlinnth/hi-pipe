@@ -7,6 +7,7 @@ import { Board } from './components/Board';
 import { DealModal } from './components/DealModal';
 import { StageSettings } from './components/StageSettings';
 import { ConnectionSettings } from './components/ConnectionSettings';
+import { WelcomeModal } from './components/WelcomeModal';
 
 function App() {
   const { deals, loading: dealsLoading, error: dealsError, reload: reloadDeals, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
@@ -24,6 +25,9 @@ function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isConnectionOpen, setIsConnectionOpen] = useState(false);
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(
+    () => !localStorage.getItem('hi_pipe_welcomed')
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -94,6 +98,17 @@ function App() {
     acc[stage.slug] = deals.filter(d => d.stage === stage.slug).length;
     return acc;
   }, {});
+
+  const handleWelcomeApi = () => {
+    localStorage.setItem('hi_pipe_welcomed', '1');
+    setIsWelcomeOpen(false);
+    setIsConnectionOpen(true);
+  };
+
+  const handleWelcomeOffline = () => {
+    localStorage.setItem('hi_pipe_welcomed', '1');
+    setIsWelcomeOpen(false);
+  };
 
   const handleStageReorder = async (id, direction) => {
     const currentIndex = stages.findIndex(s => s._id === id);
@@ -174,6 +189,13 @@ function App() {
         <ConnectionSettings
           isOnline={isOnline}
           onClose={() => setIsConnectionOpen(false)}
+        />
+      )}
+
+      {isWelcomeOpen && (
+        <WelcomeModal
+          onUseApi={handleWelcomeApi}
+          onUseOffline={handleWelcomeOffline}
         />
       )}
     </div>
