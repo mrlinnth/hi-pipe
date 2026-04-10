@@ -14,13 +14,19 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = 
     <div
       ref={isDraggingOverlay ? undefined : setNodeRef}
       style={style}
-      {...(isDraggingOverlay ? {} : listeners)}
       {...(isDraggingOverlay ? {} : attributes)}
       className={`deal-card ${isDragging && !isDraggingOverlay ? 'dragging' : ''} ${isDraggingOverlay ? 'dragging-overlay' : ''} ${compactCards ? 'compact' : ''}`}
       onClick={() => {
         if (!isDragging) onClick(deal);
       }}
     >
+      <div
+        className="drag-handle"
+        {...(isDraggingOverlay ? {} : listeners)}
+        aria-label="Drag to move"
+      >
+        ⠿
+      </div>
       <div className="deal-name">{deal.name}</div>
       <div className="deal-value">
         {new Intl.NumberFormat('en-US', {
