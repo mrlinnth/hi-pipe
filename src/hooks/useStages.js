@@ -30,6 +30,7 @@ export function useStages() {
       setIsOnline(true);
     } catch (err) {
       console.error('Failed to fetch stages:', err.message);
+      setError(err.message);
       const sorted = getCachedStages().sort((a, b) => a.sort_order - b.sort_order);
       setStages(sorted);
       setIsOnline(false);

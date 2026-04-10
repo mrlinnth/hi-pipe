@@ -10,6 +10,7 @@ export function SettingsPanel({
   stages, onAdd, onEdit, onDelete, onReorder, dealCounts,
   sectors, onSectorAdd, onSectorRename, onSectorDelete, onSectorReset,
   isOnline,
+  connectionError,
   onClose,
 }) {
   const [activeTab, setActiveTab] = useState(initialTab ?? 'stages');
@@ -32,7 +33,7 @@ export function SettingsPanel({
         </div>
 
         {activeTab === 'connection' && (
-          <ConnectionSettings asPanel isOnline={isOnline} onClose={onClose} />
+          <ConnectionSettings asPanel isOnline={isOnline} onClose={onClose} connectionError={connectionError} />
         )}
         {activeTab === 'stages' && (
           <StageSettings

@@ -15,10 +15,11 @@ export const DEFAULT_SECTORS = [
 ];
 
 export const DEFAULT_STAGES = [
-  { _id: 'local_default_1', name: 'Lead',       slug: 'lead',       color: '#6366F1', sort_order: 1 },
-  { _id: 'local_default_2', name: 'Qualified',  slug: 'qualified',  color: '#F59E0B', sort_order: 2 },
-  { _id: 'local_default_3', name: 'Proposal',   slug: 'proposal',   color: '#3B82F6', sort_order: 3 },
-  { _id: 'local_default_4', name: 'Closed Won', slug: 'closed-won', color: '#10B981', sort_order: 4 },
+  { _id: 'local_default_1', name: 'Lead',     slug: 'lead',     color: '#F59E0B', sort_order: 1 },
+  { _id: 'local_default_2', name: 'Progress', slug: 'progress', color: '#3B82F6', sort_order: 2 },
+  { _id: 'local_default_3', name: 'Won',      slug: 'won',      color: '#10B981', sort_order: 3 },
+  { _id: 'local_default_4', name: 'Lost',     slug: 'lost',     color: '#EF4444', sort_order: 4 },
+  { _id: 'local_default_5', name: 'Pause',    slug: 'pause',    color: '#6B7280', sort_order: 5 },
 ];
 
 // --- API config ---
