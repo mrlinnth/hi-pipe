@@ -19,6 +19,7 @@ export function SettingsPanel({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>Settings</h2>
+        <button className="modal-close-btn" onClick={onClose}>×</button>
 
         <div className="settings-tabs">
           {TABS.map(tab => (
@@ -56,8 +57,6 @@ export function SettingsPanel({
             onReset={onSectorReset}
           />
         )}
-
-        <button className="btn-close" onClick={onClose}>Close</button>
       </div>
     </div>
   );
