@@ -1,10 +1,10 @@
-# hi-pipe
+# Hi Pipe
 
 A lightweight, internal sales pipeline tool built as a single-page React application with a kanban board interface. Uses Cockpit CMS as the backend API and is deployed via Docker Compose.
 
 ## Overview
 
-hi-pipe provides a structured visual pipeline for tracking sales deals across configurable stages. It's designed as a single-user application with minimal friction for daily use.
+Hi Pipe provides a structured visual pipeline for tracking sales deals across configurable stages. It's designed as a single-user application with minimal friction for daily use.
 
 ## Features
 
@@ -15,6 +15,7 @@ hi-pipe provides a structured visual pipeline for tracking sales deals across co
 - **Real-time Totals**: See total value and count of deals at a glance
 - **Mobile Responsive**: Horizontal scroll and bottom-sheet forms on mobile
 - **URL State**: Filters persist in URL for bookmarkable views
+- **PWA**: Installable as a progressive web app ("HiPipe")
 
 ## Tech Stack
 
@@ -22,6 +23,7 @@ hi-pipe provides a structured visual pipeline for tracking sales deals across co
 - **Backend**: Cockpit CMS (existing instance)
 - **Auth**: Caddy basic authentication (reverse proxy level)
 - **Deployment**: Docker Compose, managed via Dockge
+- **Styling**: Plain CSS with CSS custom properties
 
 ## Setup
 
@@ -77,16 +79,16 @@ VITE_COCKPIT_API_KEY=your_key_here
 ```
 hi-pipe/
 ├── src/
-│   ├── components/    # React components (FilterBar, Board, etc.)
+│   ├── components/    # React components (FilterBar, Board, DealModal, etc.)
 │   ├── hooks/         # Custom hooks (useDeals, useStages)
-│   ├── api/           # Cockpit API client
+│   ├── api/           # Cockpit API client (cockpit.js)
 │   ├── constants/     # Hardcoded values (PERIODS, SECTORS)
-│   ├── styles/        # CSS with variables
+│   ├── styles/        # CSS (index.css)
 │   ├── App.jsx        # Main application component
-│   └── main.jsx      # React entry point
+│   └── main.jsx       # React entry point
 ├── docs/
-│   ├── PROGRESS.md    # Implementation progress tracking
-│   └── implementation_plan.md  # Detailed implementation steps
+│   ├── architecture.md       # Component tree, data flow, state management
+│   └── implementation_plan.md
 ├── AGENTS.md          # Agent collaboration guidelines
 ├── docker-compose.yml
 └── nginx.conf
@@ -95,7 +97,7 @@ hi-pipe/
 ## Key Concepts
 
 ### Stages
-Stages define the columns in your kanban board (e.g., Lead, Progress, Won, Lost). Each stage has a color and sort order.
+Stages define the columns in your kanban board (e.g., Lead, Progress, Won, Lost). Each stage has a color and sort order, configurable from within the app.
 
 ### Deals
 Deals are the cards in your pipeline. Each deal has:
@@ -111,9 +113,9 @@ Combine filters to narrow your view:
 - Sector: Banking, Insurance, etc.
 - Tags: Any tag present in your deals
 
-## Development Workflow
+## Development
 
-See `AGENTS.md` for detailed agent collaboration guidelines and workflows.
+See `AGENTS.md` for detailed agent collaboration guidelines and `docs/architecture.md` for component and data flow documentation.
 
 ### Common Commands
 
@@ -132,38 +134,11 @@ npm test
 
 # Lint code
 npm run lint
-
-# Type check (if TypeScript)
-npm run typecheck
 ```
 
 ## Deployment
 
 The application is deployed via Docker Compose on a VPS managed with Dockge. Caddy handles HTTPS and basic authentication at the reverse proxy level.
-
-See `AGENTS.md` for infrastructure agent responsibilities and deployment procedures.
-
-## Documentation
-
-- [Implementation Plan](docs/implementation_plan.md) - Detailed implementation steps
-- [Progress](docs/PROGRESS.md) - Current implementation status
-- [AGENTS.md](AGENTS.md) - Agent collaboration guidelines
-
-## Implementation Status
-
-**Completed (Steps 1-8):**
-- ✅ Project setup with Vite + React
-- ✅ Constants for periods and sectors
-- ✅ Cockpit API layer with all CRUD operations
-- ✅ Custom hooks (useDeals, useStages)
-- ✅ Global state and filtering logic
-- ✅ All 7 components (FilterBar, TotalsBar, Board, Column, DealCard, DealModal, StageSettings)
-- ✅ Comprehensive CSS styling with mobile responsiveness
-- ✅ Docker setup with nginx and docker-compose
-
-**Remaining (Steps 9-10):**
-- ⏳ Cockpit CMS configuration (collections, API key, CORS)
-- ⏳ End-to-end build verification
 
 ## API
 
@@ -176,6 +151,14 @@ The application uses Cockpit CMS as the backend. Key endpoints:
 - `GET /content/items/stages` - Fetch all stages
 
 All requests require an `api-key` header.
+
+## Inspiration
+
+Hi Pipe is inspired by [Scrumboy](https://github.com/markrai/scrumboy) by [@markrai](https://github.com/markrai) — a lightweight, no-nonsense project board that proved simplicity wins.
+
+## Built With
+
+Vibe coded using **GLM-4.6** on [OpenCode](https://github.com/sst/opencode) CLI and **Claude Sonnet 4.6** on [Claude Code](https://claude.ai/code).
 
 ## License
 

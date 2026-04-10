@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.png', 'icon-512.png', 'icon-maskable.png'],
       manifest: {
-        name: 'hi-pipe',
-        short_name: 'hi-pipe',
+        name: 'Hi Pipe',
+        short_name: 'HiPipe',
         description: 'Kanban pipeline deal management',
         start_url: '/',
         display: 'standalone',
