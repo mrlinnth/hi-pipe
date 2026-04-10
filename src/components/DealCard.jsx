@@ -29,11 +29,13 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = 
           maximumFractionDigits: 0,
         }).format(deal.value)}
       </div>
-      <div className="deal-badges">
-        <span className="badge badge-period">{deal.period}</span>
-        <span className="badge badge-sector">{deal.sector}</span>
-      </div>
-      {showTags && deal.tags && (
+      {!compactCards && (
+        <div className="deal-badges">
+          <span className="badge badge-period">{deal.period}</span>
+          <span className="badge badge-sector">{deal.sector}</span>
+        </div>
+      )}
+      {!compactCards && showTags && deal.tags && (
         <div className="deal-tags">
           {deal.tags.split(',').map((tag, index) => (
             <span key={index} className="tag-chip">
