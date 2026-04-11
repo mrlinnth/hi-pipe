@@ -1,19 +1,10 @@
 services:
-  hi-pipe:
-    image: node:20-alpine
-    working_dir: /app
-    volumes:
-      - .:/app
-    command: sh -c "npm install && npm run build && cp -r dist /output"
-    restart: unless-stopped
-  hi-pipe-web:
+  web:
     image: nginx:alpine
     ports:
       - 3200:80
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./dist:/usr/share/nginx/html:ro
-    restart: unless-stopped 
-    depends_on:
-      - hi-pipe
+    restart: unless-stopped
 networks: {}
