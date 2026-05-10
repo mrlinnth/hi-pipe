@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { LoginScreen } from './components/LoginScreen';
+import { useAuth } from './hooks/useAuth';
 import { useDeals } from './hooks/useDeals';
 import { useStages } from './hooks/useStages';
 import { FilterBar } from './components/FilterBar';
@@ -6,7 +9,6 @@ import { TotalsBar } from './components/TotalsBar';
 import { Board } from './components/Board';
 import { DealModal } from './components/DealModal';
 import { SettingsPanel } from './components/SettingsPanel';
-import { WelcomeModal } from './components/WelcomeModal';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
 import type { Deal, Stage } from './types';
 
@@ -18,7 +20,9 @@ type ActiveFilters = {
 
 type SettingsTab = 'connection' | 'stages' | 'sectors';
 
-function App() {
+const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
+
+function MainApp() {
   const { deals, loading: dealsLoading, saving, deleting, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
   const { stages, loading: stagesLoading, error: stagesError, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
 
@@ -29,7 +33,6 @@ function App() {
     sector: null,
     tag: null,
   });
-
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
@@ -37,9 +40,6 @@ function App() {
   const [sectors, setSectors] = useState<string[]>(() => getSectors());
   const [showTags, setShowTags] = useState<boolean>(false);
   const [compactCards, setCompactCards] = useState<boolean>(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(
-    () => !localStorage.getItem('hi_pipe_welcomed')
-  );
   const [dealModalError, setDealModalError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -74,9 +74,7 @@ function App() {
 
   const availableTags = Array.from(
     new Set(
-      deals.flatMap(deal =>
-        deal.tags ? deal.tags.split(',').map((t: string) => t.trim()) : []
-      )
+      deals.flatMap(deal => (deal.tags ? deal.tags.split(',').map((t: string) => t.trim()) : []))
     )
   ).sort();
 
@@ -134,7 +132,7 @@ function App() {
   };
 
   const handleSectorRename = (i: number, name: string) => {
-    const next = sectors.map((s: string, j: number) => j === i ? name : s);
+    const next = sectors.map((s: string, j: number) => (j === i ? name : s));
     setSectors(next);
     saveSectors(next);
   };
@@ -148,17 +146,6 @@ function App() {
   const handleSectorReset = () => {
     resetSectors();
     setSectors(DEFAULT_SECTORS);
-  };
-
-  const handleWelcomeApi = () => {
-    localStorage.setItem('hi_pipe_welcomed', '1');
-    setIsWelcomeOpen(false);
-    openSettings('connection');
-  };
-
-  const handleWelcomeOffline = () => {
-    localStorage.setItem('hi_pipe_welcomed', '1');
-    setIsWelcomeOpen(false);
   };
 
   const handleStageReorder = async (id: string, direction: 'up' | 'down') => {
@@ -196,14 +183,20 @@ function App() {
         activePeriod={activeFilters.period}
         activeSector={activeFilters.sector}
         activeTag={activeFilters.tag}
-          onPeriodChange={(value: string | null) => handleFilterChange('period', value)}
-          onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
-          onTagChange={(value: string | null) => handleFilterChange('tag', value)}
+        onPeriodChange={(value: string | null) => handleFilterChange('period', value)}
+        onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
+        onTagChange={(value: string | null) => handleFilterChange('tag', value)}
         availableTags={availableTags}
         sectors={sectors}
       />
 
-      <TotalsBar deals={filteredDeals} showTags={showTags} setShowTags={setShowTags} compactCards={compactCards} setCompactCards={setCompactCards} />
+      <TotalsBar
+        deals={filteredDeals}
+        showTags={showTags}
+        setShowTags={setShowTags}
+        compactCards={compactCards}
+        setCompactCards={setCompactCards}
+      />
 
       <Board
         stages={stages}
@@ -223,7 +216,11 @@ function App() {
           sectors={sectors}
           onSave={handleDealSave}
           onDelete={handleDealDelete}
-          onClose={() => { setSelectedDeal(null); setIsAddModalOpen(false); setDealModalError(null); }}
+          onClose={() => {
+            setSelectedDeal(null);
+            setIsAddModalOpen(false);
+            setDealModalError(null);
+          }}
           saving={saving}
           deleting={deleting}
           error={dealModalError}
@@ -246,17 +243,30 @@ function App() {
           onSectorReset={handleSectorReset}
           isOnline={isOnline}
           connectionError={stagesError}
+          isTeamMode={isTeamMode}
           onClose={() => setIsSettingsOpen(false)}
         />
       )}
-
-      {isWelcomeOpen && (
-        <WelcomeModal
-          onUseApi={handleWelcomeApi}
-          onUseOffline={handleWelcomeOffline}
-        />
-      )}
     </div>
+  );
+}
+
+function App() {
+  const auth = useAuth();
+
+  return (
+    <AuthProvider value={auth}>
+      {isTeamMode && !auth.authState ? (
+        <LoginScreen
+          isLoading={auth.isLoading}
+          error={auth.error}
+          errorReason={auth.errorReason}
+          onLogin={auth.login}
+        />
+      ) : (
+        <MainApp />
+      )}
+    </AuthProvider>
   );
 }
 

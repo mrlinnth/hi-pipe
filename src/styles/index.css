@@ -42,6 +42,88 @@ body {
   color: #EF4444;
 }
 
+/* Team auth screen */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top left, rgba(45, 58, 80, 0.08), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(45, 58, 80, 0.05), transparent 30%),
+    var(--bg);
+}
+
+.login-screen-card {
+  width: min(100%, 560px);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbf8 100%);
+  border: 1px solid rgba(224, 222, 216, 0.9);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-screen-card::after {
+  content: '';
+  position: absolute;
+  inset: auto -20% -35% auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 58, 80, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.login-brand {
+  margin-bottom: 1rem;
+}
+
+.login-kicker {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.login-brand h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.login-copy {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  max-width: 38ch;
+  margin-bottom: 1.5rem;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.login-note {
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.login-error {
+  margin-top: 1rem;
+  background: #FEF2F2;
+  border: 1px solid #FEE2E2;
+  color: #B91C1C;
+  border-radius: var(--radius);
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+}
+
 /* App Layout */
 .app {
   min-height: 100vh;
