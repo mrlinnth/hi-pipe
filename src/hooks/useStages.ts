@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchStages, createStage, updateStage, deleteStage } from '../api/cockpit';
+import { fetchStages, createStage, updateStage, deleteStage } from '../lib/cockpit';
 import type { Stage } from '../types';
 import {
   isApiConfigured,

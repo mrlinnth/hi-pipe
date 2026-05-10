@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
+import { useAuthContext } from './context/AuthContext';
 import { LoginScreen } from './components/LoginScreen';
 import { useAuth } from './hooks/useAuth';
 import { useDeals } from './hooks/useDeals';
 import { useStages } from './hooks/useStages';
+import { useReferenceData } from './hooks/useReferenceData';
 import { FilterBar } from './components/FilterBar';
 import { TotalsBar } from './components/TotalsBar';
 import { Board } from './components/Board';
@@ -23,8 +25,10 @@ type SettingsTab = 'connection' | 'stages' | 'sectors';
 const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
 
 function MainApp() {
-  const { deals, loading: dealsLoading, saving, deleting, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
+  const { authState } = useAuthContext();
+  const { deals, loading: dealsLoading, saving, deleting, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals(authState?.userId);
   const { stages, loading: stagesLoading, error: stagesError, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
+  const { clients, sectors: refSectors, quarters } = useReferenceData();
 
   const isOnline = dealsOnline && stagesOnline;
 
@@ -187,7 +191,8 @@ function MainApp() {
         onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
         onTagChange={(value: string | null) => handleFilterChange('tag', value)}
         availableTags={availableTags}
-        sectors={sectors}
+        sectors={refSectors.map((sector) => sector.name)}
+        periods={quarters.map((quarter) => quarter.name)}
       />
 
       <TotalsBar
@@ -213,7 +218,9 @@ function MainApp() {
         <DealModal
           deal={selectedDeal}
           stages={stages}
-          sectors={sectors}
+          sectors={refSectors.map((sector) => sector.name)}
+          periods={quarters.map((quarter) => quarter.name)}
+          clients={clients}
           onSave={handleDealSave}
           onDelete={handleDealDelete}
           onClose={() => {
