@@ -77,9 +77,14 @@ export function setCachedDeals(items: Deal[]): void {
   writeCache(KEYS.DEALS, items);
 }
 
-export function localCreateDeal(data: Partial<Deal>): Deal {
+export function localCreateDeal(data: Partial<Deal>, ownerId?: string): Deal {
   const items = getCachedDeals();
-  const newItem: Deal = { ...(data as Deal), _id: `local_${crypto.randomUUID()}`, _created: Date.now() };
+  const newItem: Deal = {
+    ...(data as Deal),
+    ...(ownerId ? { owner: { _id: ownerId, name: '' } } : {}),
+    _id: `local_${crypto.randomUUID()}`,
+    _created: Date.now(),
+  };
   setCachedDeals([...items, newItem]);
   return newItem;
 }

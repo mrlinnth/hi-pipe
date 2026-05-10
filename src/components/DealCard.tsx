@@ -1,4 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
+import { useAuthContext } from '../context/AuthContext';
+import { canEdit } from '../lib/auth';
 import type { Deal } from '../types';
 
 type Props = {
@@ -10,9 +12,11 @@ type Props = {
 };
 
 export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = true, compactCards = false }: Props) {
+  const { authState } = useAuthContext();
+  const editable = canEdit(deal, authState);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal._id,
-    disabled: isDraggingOverlay,
+    disabled: isDraggingOverlay || !editable,
   });
 
   const style = !isDraggingOverlay && transform ? {
@@ -29,13 +33,16 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = 
         if (!isDragging) onClick(deal);
       }}
     >
-      <div
-        className="drag-handle"
-        {...(isDraggingOverlay ? {} : listeners)}
-        aria-label="Drag to move"
-      >
-        ⠿
-      </div>
+      {!isDraggingOverlay && (
+        <div
+          className={`drag-handle${editable ? '' : ' drag-handle-disabled'}`}
+          {...(editable ? listeners : {})}
+          aria-label={editable ? 'Drag to move' : 'Deal cannot be moved'}
+          aria-disabled={!editable}
+        >
+          ⠿
+        </div>
+      )}
       <div className="deal-name">{deal.name}</div>
       <div className="deal-value">
         {new Intl.NumberFormat('en-US', {
@@ -48,6 +55,8 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = 
         <div className="deal-badges">
           <span className="badge badge-period">{deal.period}</span>
           <span className="badge badge-sector">{deal.sector}</span>
+          {deal.client?.name && <span className="badge badge-client">{deal.client.name}</span>}
+          {deal.owner?.name && !editable && <span className="badge badge-owner">{deal.owner.name}</span>}
         </div>
       )}
       {!compactCards && showTags && deal.tags && (

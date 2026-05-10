@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { fetchDeals, createDeal, updateDeal, deleteDeal } from '../api/cockpit';
+import { useAuthContext } from '../context/AuthContext';
+import { fetchDeals, createDeal, updateDeal, deleteDeal } from '../lib/cockpit';
 import type { Deal } from '../types';
 import {
   isApiConfigured,
@@ -7,7 +8,20 @@ import {
   localCreateDeal, localUpdateDeal, localDeleteDeal,
 } from '../storage';
 
-export function useDeals() {
+const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
+
+function filterDealsForUser(items: Deal[], userId: string | null, userRole: string | null): Deal[] {
+  if (!isTeamMode || userRole === 'management' || userRole === 'admin' || !userId) {
+    return items;
+  }
+
+  return items.filter((deal: Deal) => deal.owner?._id === userId);
+}
+
+export function useDeals(userId?: string) {
+  const { authState } = useAuthContext();
+  const effectiveUserId = userId ?? authState?.userId ?? null;
+  const userRole = authState?.userRole ?? null;
   const [deals, setDeals] = useState<Deal[]>(() => getCachedDeals());
   const [loading, setLoading] = useState<boolean>(isApiConfigured());
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +33,7 @@ export function useDeals() {
 
   const reload = async (): Promise<void> => {
     if (!isApiConfigured()) {
-      setDeals(getCachedDeals());
+      setDeals(filterDealsForUser(getCachedDeals(), effectiveUserId, userRole));
       setLoading(false);
       setIsOnline(false);
       return;
@@ -27,15 +41,16 @@ export function useDeals() {
     try {
       setLoading(true);
       setError(null);
-      const result = await fetchDeals();
-      setCachedDeals(result.items);
-      setDeals(result.items);
+      const result = await fetchDeals(isTeamMode ? effectiveUserId ?? undefined : undefined);
+      const visibleDeals = filterDealsForUser(result, effectiveUserId, userRole);
+      setCachedDeals(result);
+      setDeals(visibleDeals);
       setIsOnline(true);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to fetch deals';
       console.error('Failed to fetch deals:', message);
       setError(message);
-      setDeals(getCachedDeals());
+      setDeals(filterDealsForUser(getCachedDeals(), effectiveUserId, userRole));
       setIsOnline(false);
     } finally {
       setLoading(false);
@@ -47,10 +62,10 @@ export function useDeals() {
     setSavingError(null);
     try {
       if (isApiConfigured() && isOnline) {
-        await createDeal(data);
+        await createDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
         await reload();
       } else {
-        const newDeal = localCreateDeal(data);
+        const newDeal = localCreateDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
         setDeals((prev: Deal[]) => [...prev, newDeal]);
       }
     } catch (err: unknown) {
@@ -108,7 +123,7 @@ export function useDeals() {
 
   useEffect(() => {
     reload();
-  }, []);
+  }, [effectiveUserId, userRole]);
 
   return { deals, loading, error, isOnline, saving, deleting, savingError, deletingError, reload, addDeal, editDeal, removeDeal, moveDeal };
 }

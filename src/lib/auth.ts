@@ -5,6 +5,7 @@ import {
 } from '@azure/msal-browser';
 import { findOrCreateUser } from './cockpit';
 import type { AuthState as StoredAuthState, CockpitUser } from '../types';
+import type { Deal } from '../types';
 
 export type AuthResult =
   | { success: true; user: CockpitUser }
@@ -225,4 +226,12 @@ export function restoreSession(): StoredAuthState | null {
 
 export function logout(): void {
   localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+export function canEdit(deal: Deal, authState: StoredAuthState | null = restoreSession()): boolean {
+  if (import.meta.env.VITE_APP_MODE !== 'team') {
+    return true;
+  }
+
+  return authState?.userId === deal.owner?._id;
 }
