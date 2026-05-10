@@ -8,3 +8,5 @@
   - Added live Cockpit reference-data loading, owner-aware deal editing, read-only modal/card behavior, and verified build, lint, and personal-mode dev startup.
 - Phase 3 - Offline support and manual sync: done
   - Added IndexedDB-backed deals/reference data caches, offline queueing, sync UI, pending deal indicators, and a manual service worker cache shell; build and lint passed.
+- Phase 4 - CSV and Excel export: done
+  - Added SheetJS-backed deal export with filter-aware CSV/XLSX downloads from the filter bar; lint and build passed.

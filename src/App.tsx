@@ -15,6 +15,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { SyncStatusBar } from './components/SyncStatusBar';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
 import { syncNow } from './lib/sync';
+import { exportDeals } from './lib/export';
 import type { Deal, Stage } from './types';
 
 type ActiveFilters = {
@@ -275,6 +276,8 @@ function MainApp() {
         onPeriodChange={(value: string | null) => handleFilterChange('period', value)}
         onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
         onTagChange={(value: string | null) => handleFilterChange('tag', value)}
+        onExportCsv={() => exportDeals(filteredDeals, 'csv')}
+        onExportExcel={() => exportDeals(filteredDeals, 'xlsx')}
         availableTags={availableTags}
         sectors={refSectors.map((sector) => sector.name)}
         periods={quarters.map((quarter) => quarter.name)}
