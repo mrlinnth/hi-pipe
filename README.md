@@ -45,6 +45,7 @@ npm run dev
 Copy `.env.example` to `.env` and fill in the values you need.
 
 ```
+VITE_APP_NAME=Hi Pipe
 VITE_APP_MODE=
 VITE_ENTRA_CLIENT_ID=
 VITE_ENTRA_TENANT_ID=
@@ -54,6 +55,7 @@ VITE_COCKPIT_API_KEY=
 ```
 
 Notes:
+- `VITE_APP_NAME` controls the app title shown in the browser and the UI.
 - `VITE_APP_MODE` controls whether the app runs in `personal` or `team` mode.
 - The Entra variables are required for team mode.
 - In personal mode, `VITE_COCKPIT_API_URL` and `VITE_COCKPIT_API_KEY` can be entered locally in the app as well as set in `.env`.

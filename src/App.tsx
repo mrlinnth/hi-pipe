@@ -16,6 +16,7 @@ import { SyncStatusBar } from './components/SyncStatusBar';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS, DEFAULT_PERIODS } from './storage';
 import { syncNow } from './lib/sync';
 import { exportDeals } from './lib/export';
+import { getAppName } from './lib/appName';
 import type { Deal, Stage } from './types';
 
 type ActiveFilters = {
@@ -27,6 +28,7 @@ type ActiveFilters = {
 type SettingsTab = 'connection' | 'stages' | 'sectors';
 
 const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
+const appName = getAppName();
 
 function MainApp() {
   const { authState } = useAuthContext();
@@ -252,8 +254,8 @@ function MainApp() {
     <div className="app">
       <header className="app-header">
         <div className="brand">
-          <img src="/icon-192.png" alt="Hi Pipe" className="brand-icon" />
-          <h1><span className="brand-hi">Hi</span> Pipe</h1>
+          <img src="/icon-192.png" alt={appName} className="brand-icon" />
+          <h1>{appName}</h1>
         </div>
         <div className="header-actions">
           <span className={`connection-badge ${isTeamMode ? (isOnline ? 'online' : 'offline') : 'local'}`}>

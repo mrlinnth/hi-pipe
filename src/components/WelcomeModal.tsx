@@ -1,15 +1,19 @@
+import { getAppName } from '../lib/appName';
+
 type Props = {
   onUseApi: () => void;
   onUseOffline: () => void;
 };
 
 export function WelcomeModal({ onUseApi, onUseOffline }: Props) {
+  const appName = getAppName();
+
   return (
     <div className="modal-backdrop">
       <div className="modal-content welcome-modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Welcome to Hi Pipe</h2>
+        <h2>Welcome to {appName}</h2>
         <p className="settings-hint">
-          Hi Pipe is a lightweight deal pipeline. Choose how you&apos;d like to store your data:
+          {appName} is a lightweight deal pipeline. Choose how you&apos;d like to store your data:
         </p>
 
         <div className="welcome-modes">

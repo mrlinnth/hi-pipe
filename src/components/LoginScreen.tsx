@@ -1,4 +1,5 @@
 import type { AuthResult } from '../lib/auth';
+import { getAppName } from '../lib/appName';
 
 type Props = {
   isLoading: boolean;
@@ -30,15 +31,16 @@ function getErrorMessage(reason: AuthResult['reason'] | null, message: string | 
 export function LoginScreen({ isLoading, error, errorReason, onLogin }: Props) {
   const busy = isLoading;
   const buttonLabel = busy ? 'Signing in...' : 'Sign in with Microsoft';
+  const appName = getAppName();
 
   return (
     <main className="login-screen">
       <div className="login-screen-card">
         <div className="brand login-brand">
-          <img src="/icon-192.png" alt="Hi Pipe" className="brand-icon" />
+          <img src="/icon-192.png" alt={appName} className="brand-icon" />
           <div>
             <p className="login-kicker">Team access</p>
-            <h1><span className="brand-hi">Hi</span> Pipe</h1>
+            <h1>{appName}</h1>
           </div>
         </div>
 
