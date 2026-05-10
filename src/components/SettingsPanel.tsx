@@ -12,6 +12,7 @@ export function SettingsPanel({
   sectors, onSectorAdd, onSectorRename, onSectorDelete, onSectorReset,
   isOnline,
   connectionError,
+  isTeamMode = false,
   onClose,
 }: {
   initialTab?: 'connection' | 'stages' | 'sectors';
@@ -28,9 +29,12 @@ export function SettingsPanel({
   onSectorReset: () => void;
   isOnline: boolean;
   connectionError: string | null;
+  isTeamMode?: boolean;
   onClose: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<'connection' | 'stages' | 'sectors'>(initialTab ?? 'stages');
+  const tabs = isTeamMode ? TABS.filter((tab) => tab !== 'connection') : TABS;
+  const initialActiveTab = initialTab && tabs.includes(initialTab) ? initialTab : tabs[0] ?? 'stages';
+  const [activeTab, setActiveTab] = useState<'connection' | 'stages' | 'sectors'>(initialActiveTab);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -39,7 +43,7 @@ export function SettingsPanel({
         <button className="modal-close-btn" onClick={onClose}>×</button>
 
         <div className="settings-tabs">
-          {TABS.map(tab => (
+          {tabs.map(tab => (
             <button
               key={tab}
               className={`settings-tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -50,7 +54,7 @@ export function SettingsPanel({
           ))}
         </div>
 
-        {activeTab === 'connection' && (
+        {activeTab === 'connection' && !isTeamMode && (
           <ConnectionSettings asPanel isOnline={isOnline} onClose={onClose} connectionError={connectionError} />
         )}
         {activeTab === 'stages' && (
