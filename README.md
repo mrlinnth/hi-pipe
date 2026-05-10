@@ -41,12 +41,22 @@ npm run dev
 - Plain CSS
 - Docker + Nginx
 
-## Environment Variables (optional for offline and local storage usage)
-Required in `.env`:
+## Environment Variables
+Copy `.env.example` to `.env` and fill in the values you need.
+
 ```
-VITE_COCKPIT_API_URL=https://cms.hiyan.xyz/:hi-pipe/api
-VITE_COCKPIT_API_KEY=your_api_key_here
+VITE_APP_MODE=
+VITE_ENTRA_CLIENT_ID=
+VITE_ENTRA_TENANT_ID=
+VITE_ALLOWED_DOMAIN=bimgoc.com
+VITE_COCKPIT_API_URL=
+VITE_COCKPIT_API_KEY=
 ```
+
+Notes:
+- `VITE_APP_MODE` controls whether the app runs in `personal` or `team` mode.
+- The Entra variables are required for team mode.
+- In personal mode, `VITE_COCKPIT_API_URL` and `VITE_COCKPIT_API_KEY` can be entered locally in the app as well as set in `.env`.
 
 ## Project Structure
 ```
