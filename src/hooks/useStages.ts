@@ -1,16 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createStage, updateStage, deleteStage } from '../lib/cockpit';
 import { getAll } from '../lib/db';
+import {
+  DEFAULT_STAGES,
+  getCachedStages,
+  localCreateStage,
+  localDeleteStage,
+  localUpdateStage,
+  setCachedStages,
+} from '../storage';
 import { seedCache } from '../lib/sync';
 import { useOnlineStatus } from './useOnlineStatus';
 import type { Stage } from '../types';
+
+const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
 
 function sortStages(items: Stage[]): Stage[] {
   return [...items].sort((left: Stage, right: Stage) => left.sort_order - right.sort_order);
 }
 
-async function readStages(): Promise<Stage[]> {
+async function readTeamStages(): Promise<Stage[]> {
   return sortStages(await getAll<Stage>('stages'));
+}
+
+function readLocalStages(): Stage[] {
+  return sortStages(getCachedStages());
 }
 
 export function useStages() {
@@ -31,24 +45,35 @@ export function useStages() {
     setError(null);
 
     try {
-      let storedStages = await getAll<Stage>('stages');
-      if (storedStages.length === 0 && browserOnline) {
-        await seedCache();
-        storedStages = await getAll<Stage>('stages');
+      if (!isTeamMode) {
+        const storedStages = readLocalStages();
+        if (storedStages.length === 0) {
+          setCachedStages(DEFAULT_STAGES);
+          setStages(sortStages(DEFAULT_STAGES));
+        } else {
+          setStages(storedStages);
+        }
+        setIsOnline(true);
+        return;
       }
 
-      const sorted = sortStages(storedStages);
-      setStages(sorted);
+      let storedStages = await readTeamStages();
+      if (storedStages.length === 0 && browserOnline) {
+        await seedCache();
+        storedStages = await readTeamStages();
+      }
+
+      setStages(storedStages);
       setIsOnline(browserOnline);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load stages';
       setError(message);
       try {
-        setStages(await readStages());
+        setStages(isTeamMode ? await readTeamStages() : readLocalStages());
       } catch {
-        setStages([]);
+        setStages(isTeamMode ? [] : DEFAULT_STAGES);
       }
-      setIsOnline(false);
+      setIsOnline(isTeamMode ? false : true);
     } finally {
       setLoading(false);
     }
@@ -59,7 +84,11 @@ export function useStages() {
     setAddingError(null);
 
     try {
-      await createStage(data);
+      if (isTeamMode) {
+        await createStage(data);
+      } else {
+        localCreateStage(data);
+      }
       await reload();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add stage';
@@ -75,7 +104,11 @@ export function useStages() {
     setEditingError(null);
 
     try {
-      await updateStage(id, data);
+      if (isTeamMode) {
+        await updateStage(id, data);
+      } else {
+        localUpdateStage(id, data);
+      }
       await reload();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to edit stage';
@@ -91,7 +124,11 @@ export function useStages() {
     setDeletingError(null);
 
     try {
-      await deleteStage(id);
+      if (isTeamMode) {
+        await deleteStage(id);
+      } else {
+        localDeleteStage(id);
+      }
       await reload();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete stage';

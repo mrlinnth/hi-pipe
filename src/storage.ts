@@ -16,6 +16,8 @@ export const DEFAULT_SECTORS: string[] = [
   'Telecom / Infra / Media',
 ];
 
+export const DEFAULT_PERIODS: string[] = ['Q1', 'Q2', 'Q3', 'Q4'];
+
 export const DEFAULT_STAGES: Stage[] = [
   { _id: 'local_default_1', name: 'Lead',     slug: 'lead',     color: '#F59E0B', sort_order: 1 },
   { _id: 'local_default_2', name: 'Progress', slug: 'progress', color: '#3B82F6', sort_order: 2 },

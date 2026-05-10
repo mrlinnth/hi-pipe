@@ -26,13 +26,21 @@ function filterDealsForUser(items: Deal[], userId: string | null, userRole: stri
   return items.filter((deal: Deal) => deal.owner?._id === userId);
 }
 
-function buildLocalDeal(data: Partial<Deal>, ownerId: string | null, ownerName: string): Deal {
+function buildTeamLocalDeal(data: Partial<Deal>, ownerId: string | null, ownerName: string): Deal {
   return {
     ...(data as Deal),
     _id: `temp_${crypto.randomUUID()}`,
     _pending: true,
     _created: Date.now(),
     ...(ownerId ? { owner: { _id: ownerId, name: ownerName } } : {}),
+  };
+}
+
+function buildPersonalDeal(data: Partial<Deal>): Deal {
+  return {
+    ...(data as Deal),
+    _id: `local_${crypto.randomUUID()}`,
+    _created: Date.now(),
   };
 }
 
@@ -57,6 +65,11 @@ export function useDeals(userId?: string) {
   const [queueCount, setQueueCount] = useState<number>(0);
 
   const refreshQueueCount = useCallback(async (): Promise<number> => {
+    if (!isTeamMode) {
+      setQueueCount(0);
+      return 0;
+    }
+
     const queue = await getQueue();
     setQueueCount(queue.length);
     return queue.length;
@@ -73,6 +86,14 @@ export function useDeals(userId?: string) {
     setError(null);
 
     try {
+      if (!isTeamMode) {
+        const storedDeals = await getAll<Deal>('deals');
+        const visibleDeals = filterDealsForUser(sortDeals(storedDeals), effectiveUserId, userRole);
+        setDeals(visibleDeals);
+        setIsOnline(true);
+        return;
+      }
+
       let storedDeals = await getAll<Deal>('deals');
       if (storedDeals.length === 0 && browserOnline) {
         await seedCache();
@@ -91,7 +112,7 @@ export function useDeals(userId?: string) {
       } catch {
         setDeals([]);
       }
-      setIsOnline(false);
+      setIsOnline(isTeamMode ? false : true);
     } finally {
       setLoading(false);
       await refreshQueueCount();
@@ -103,11 +124,14 @@ export function useDeals(userId?: string) {
     setSavingError(null);
 
     try {
-      if (browserOnline) {
+      if (!isTeamMode) {
+        const localDeal = buildPersonalDeal(data);
+        await put('deals', localDeal);
+      } else if (browserOnline) {
         const created = await createRemoteDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
         await put('deals', created);
       } else {
-        const localDeal = buildLocalDeal(data, isTeamMode ? effectiveUserId : null, authState?.userName ?? '');
+        const localDeal = buildTeamLocalDeal(data, isTeamMode ? effectiveUserId : null, authState?.userName ?? '');
         await put('deals', localDeal);
         await enqueue({
           action: 'create',
@@ -141,10 +165,14 @@ export function useDeals(userId?: string) {
         ...baseDeal,
         ...(data as Deal),
         _id: id,
-        _pending: existingDeal?._pending ? true : !browserOnline,
+        _pending: isTeamMode ? (existingDeal?._pending ? true : !browserOnline) : existingDeal?._pending,
       };
 
-      if (browserOnline && !existingDeal?._pending) {
+      if (!isTeamMode) {
+        const personalDeal = { ...nextDeal };
+        delete personalDeal._pending;
+        await put('deals', personalDeal);
+      } else if (browserOnline && !existingDeal?._pending) {
         const updated = await updateRemoteDeal(id, data);
         await put('deals', updated);
       } else {
@@ -176,7 +204,9 @@ export function useDeals(userId?: string) {
       const storedDeals = await getAll<Deal>('deals');
       const existingDeal = storedDeals.find((deal: Deal) => deal._id === id);
 
-      if (browserOnline && !existingDeal?._pending) {
+      if (!isTeamMode) {
+        await remove('deals', id);
+      } else if (browserOnline && !existingDeal?._pending) {
         await deleteRemoteDeal(id);
         await remove('deals', id);
       } else {

@@ -4,6 +4,8 @@ import { seedCache } from '../lib/sync';
 import { useOnlineStatus } from './useOnlineStatus';
 import type { CockpitClient, CockpitFinancialQuarter, CockpitSector } from '../types';
 
+const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
+
 type ReferenceDataState = {
   clients: CockpitClient[];
   sectors: CockpitSector[];
@@ -47,6 +49,11 @@ export function useReferenceData(): ReferenceDataState {
     setIsLoading(true);
 
     try {
+      if (!isTeamMode) {
+        applyReferenceData({ clients: [], sectors: [], quarters: [] });
+        return;
+      }
+
       let data = await readReferenceData();
       if (browserOnline && data.clients.length === 0 && data.sectors.length === 0 && data.quarters.length === 0) {
         await seedCache();

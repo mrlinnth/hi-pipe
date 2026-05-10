@@ -13,7 +13,7 @@ import { Board } from './components/Board';
 import { DealModal } from './components/DealModal';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SyncStatusBar } from './components/SyncStatusBar';
-import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
+import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS, DEFAULT_PERIODS } from './storage';
 import { syncNow } from './lib/sync';
 import { exportDeals } from './lib/export';
 import type { Deal, Stage } from './types';
@@ -56,8 +56,7 @@ function MainApp() {
     reload: reloadStages,
   } = useStages();
   const { clients, sectors: refSectors, quarters, refresh: refreshReferenceData } = useReferenceData();
-
-  const isOnline = dealsOnline && stagesOnline;
+  const isOnline = isTeamMode ? dealsOnline && stagesOnline : true;
 
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     period: null,
@@ -84,7 +83,7 @@ function MainApp() {
   }, []);
 
   const handleSync = async () => {
-    if (!browserOnline || syncStatus === 'syncing') {
+    if (!isTeamMode || !browserOnline || syncStatus === 'syncing') {
       return;
     }
 
@@ -245,6 +244,10 @@ function MainApp() {
     return <div className="loading">Loading...</div>;
   }
 
+  const sectorOptions = isTeamMode ? refSectors.map((sector) => sector.name) : sectors;
+  const periodOptions = isTeamMode ? quarters.map((quarter) => quarter.name) : DEFAULT_PERIODS;
+  const clientOptions = isTeamMode ? clients : [];
+
   return (
     <div className="app">
       <header className="app-header">
@@ -253,21 +256,23 @@ function MainApp() {
           <h1><span className="brand-hi">Hi</span> Pipe</h1>
         </div>
         <div className="header-actions">
-          <span className={`connection-badge ${isOnline ? 'online' : 'offline'}`}>
-            {isOnline ? 'Online' : 'Offline'}
+          <span className={`connection-badge ${isTeamMode ? (isOnline ? 'online' : 'offline') : 'local'}`}>
+            {isTeamMode ? (isOnline ? 'Online' : 'Offline') : 'Local'}
           </span>
           <button className="btn-settings" onClick={() => openSettings('stages')} aria-label="Settings">⚙️</button>
         </div>
       </header>
 
-      <SyncStatusBar
-        isOnline={browserOnline}
-        pendingCount={queueCount}
-        status={syncStatus}
-        errorCount={syncErrorCount}
-        onSync={handleSync}
-        onRetry={handleSync}
-      />
+      {isTeamMode && (
+        <SyncStatusBar
+          isOnline={browserOnline}
+          pendingCount={queueCount}
+          status={syncStatus}
+          errorCount={syncErrorCount}
+          onSync={handleSync}
+          onRetry={handleSync}
+        />
+      )}
 
       <FilterBar
         activePeriod={activeFilters.period}
@@ -279,8 +284,8 @@ function MainApp() {
         onExportCsv={() => exportDeals(filteredDeals, 'csv')}
         onExportExcel={() => exportDeals(filteredDeals, 'xlsx')}
         availableTags={availableTags}
-        sectors={refSectors.map((sector) => sector.name)}
-        periods={quarters.map((quarter) => quarter.name)}
+        sectors={sectorOptions}
+        periods={periodOptions}
       />
 
       <TotalsBar
@@ -306,9 +311,9 @@ function MainApp() {
         <DealModal
           deal={selectedDeal}
           stages={stages}
-          sectors={refSectors.map((sector) => sector.name)}
-          periods={quarters.map((quarter) => quarter.name)}
-          clients={clients}
+          sectors={sectorOptions}
+          periods={periodOptions}
+          clients={clientOptions}
           onSave={handleDealSave}
           onDelete={handleDealDelete}
           onClose={() => {
