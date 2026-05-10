@@ -551,35 +551,6 @@ function requestWithCurl(method, url, key, payload) {
   return { status, body };
 }
 
-async function verifyWrittenItem(url, key, collection, id) {
-  const verifyUrl = `${url}/content/items/${collection}?populate=1`;
-  const res = await fetch(verifyUrl, {
-    method: 'GET',
-    headers: {
-      'Api-Key': key,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Verification GET failed for ${collection} ${id}: HTTP ${res.status}`);
-  }
-
-  const parsed = await res.json();
-  const items = Array.isArray(parsed)
-    ? parsed
-    : typeof parsed === 'object' && parsed !== null && Array.isArray(parsed.items)
-      ? parsed.items
-      : [];
-  const item = items.find((candidate) => candidate && candidate._id === id) ?? null;
-
-  if (!item || item._id !== id) {
-    throw new Error(`Verification failed for ${collection} ${id}: unexpected response ${JSON.stringify(parsed)}`);
-  }
-
-  return item;
-}
-
 function printHelp() {
   console.log(`Usage:
   node scripts/migrate-prod-cockpit.mjs [--apply]
@@ -632,16 +603,6 @@ async function main() {
     const result = requestWithCurl('POST', endpoint, key, { data: op.item });
     const preview = result.body.trim();
     console.log(`[${label}] OK ${preview ? preview.slice(0, 180) : '(empty response)'}`);
-
-    if (process.env.VERIFY_COCKPIT_MIGRATION === '1') {
-      try {
-        const verified = await verifyWrittenItem(url, key, op.collection, op.item._id);
-        console.log(`[${label}] VERIFIED ${op.collection} ${verified._id}`);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.warn(`[${label}] VERIFY WARN ${op.collection} ${op.item._id}: ${message}`);
-      }
-    }
   }
 
   console.log(`Completed ${operations.length} Cockpit upserts.`);
