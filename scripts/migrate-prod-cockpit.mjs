@@ -496,25 +496,25 @@ function formatPayload(collection, item) {
   };
 }
 
-function requestWithCurl(url, key, payload) {
-  const res = spawnSync(
-    'curl',
-    [
-      '-sS',
-      '-X',
-      'POST',
-      url,
-      '-H',
-      `Api-Key: ${key}`,
-      '-H',
-      'Content-Type: application/json',
-      '--data-binary',
-      JSON.stringify({ data: payload }),
-      '-w',
-      '\n__HTTP_STATUS__:%{http_code}',
-    ],
-    { encoding: 'utf8' },
-  );
+function requestWithCurl(method, url, key, payload) {
+  const args = [
+    '-sS',
+    '-X',
+    method,
+    url,
+    '-H',
+    `Api-Key: ${key}`,
+    '-H',
+    'Content-Type: application/json',
+  ];
+
+  if (payload !== undefined) {
+    args.push('--data-binary', JSON.stringify(payload));
+  }
+
+  args.push('-w', '\n__HTTP_STATUS__:%{http_code}');
+
+  const res = spawnSync('curl', args, { encoding: 'utf8' });
 
   if (res.error) {
     throw res.error;
@@ -547,6 +547,35 @@ function requestWithCurl(url, key, payload) {
   }
 
   return { status, body };
+}
+
+function verifyWrittenItem(url, key, collection, id) {
+  const verifyUrl = `${url}/content/items/${collection}?filter[_id]=${encodeURIComponent(id)}&limit=1&populate=1`;
+  const result = requestWithCurl('GET', verifyUrl, key);
+
+  let parsed;
+  try {
+    parsed = JSON.parse(result.body);
+  } catch {
+    throw new Error(`Failed to parse verification response for ${collection} ${id}: ${result.body}`);
+  }
+
+  const items = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.items)
+      ? parsed.items
+      : [];
+
+  if (items.length === 0) {
+    throw new Error(`Verification failed for ${collection} ${id}: record not readable after write.`);
+  }
+
+  const item = items[0];
+  if (!item || item._id !== id) {
+    throw new Error(`Verification failed for ${collection} ${id}: unexpected response ${result.body}`);
+  }
+
+  return item;
 }
 
 function printHelp() {
@@ -597,10 +626,13 @@ function main() {
   for (const [index, op] of operations.entries()) {
     const endpoint = `${url}/content/item/${op.collection}`;
     const label = `${index + 1}/${operations.length}`;
-    console.log(`[${label}] Writing ${op.collection} ${op.item._id}...`);
-    const result = requestWithCurl(endpoint, key, op.item);
+    console.log(`[${label}] Writing ${op.collection} ${op.item._id} -> ${endpoint}`);
+    const result = requestWithCurl('POST', endpoint, key, { data: op.item });
     const preview = result.body.trim();
     console.log(`[${label}] OK ${preview ? preview.slice(0, 180) : '(empty response)'}`);
+
+    const verified = verifyWrittenItem(url, key, op.collection, op.item._id);
+    console.log(`[${label}] VERIFIED ${op.collection} ${verified._id}`);
   }
 
   console.log(`Completed ${operations.length} Cockpit upserts.`);
