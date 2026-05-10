@@ -1,8 +1,39 @@
 import { useState } from 'react';
 import { PERIODS } from '../constants/options';
+import type { Deal, Stage } from '../types';
 
-export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, saving = false, deleting = false, error = null }) {
-  const [formData, setFormData] = useState(deal || {
+type Props = {
+  deal: Deal | null;
+  stages: Stage[];
+  sectors: string[];
+  onSave: (data: Partial<Deal>) => void;
+  onDelete: (id: string) => void;
+  onClose: () => void;
+  saving?: boolean;
+  deleting?: boolean;
+  error?: string | null;
+};
+
+type DealFormState = {
+  name: string;
+  value: number | string;
+  stage: string;
+  period: string;
+  sector: string;
+  notes: string;
+  tags: string;
+};
+
+export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, saving = false, deleting = false, error = null }: Props) {
+  const [formData, setFormData] = useState<DealFormState>(() => deal ? {
+    name: deal.name,
+    value: deal.value,
+    stage: deal.stage,
+    period: deal.period,
+    sector: deal.sector,
+    notes: deal.notes ?? '',
+    tags: deal.tags ?? '',
+  } : {
     name: '',
     value: 0,
     stage: stages[0]?.slug || '',
@@ -11,11 +42,11 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, sa
     notes: '',
     tags: '',
   });
-  const [tags, setTags] = useState(deal?.tags ? deal.tags.split(',').map(t => t.trim()) : []);
-  const [tagInput, setTagInput] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [tags, setTags] = useState<string[]>(() => deal?.tags ? deal.tags.split(',').map((t: string) => t.trim()) : []);
+  const [tagInput, setTagInput] = useState<string>('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (saving || deleting) {
       return;
@@ -38,21 +69,21 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, sa
     }
   };
 
-  const handleRemoveTag = (tagToRemove) => {
+  const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleTagInputKeyDown = (e) => {
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       handleAddTag();
     }
   };
 
-  const handlePasteTags = (e) => {
+  const handlePasteTags = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    const newTags = pastedText.split(',').map(t => t.trim()).filter(t => t);
+    const newTags = pastedText.split(',').map((t: string) => t.trim()).filter((t: string) => t);
     const uniqueTags = [...new Set([...tags, ...newTags])];
     setTags(uniqueTags);
   };
@@ -108,7 +139,7 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, sa
               value={formData.period}
               onChange={(e) => setFormData({ ...formData, period: e.target.value })}
             >
-              {PERIODS.map(period => (
+              {PERIODS.map((period: string) => (
                 <option key={period} value={period}>{period}</option>
               ))}
             </select>
@@ -123,7 +154,7 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, sa
             >
               {sectors.length === 0
                 ? <option disabled value="">No sectors configured</option>
-                : sectors.map(sector => (
+                : sectors.map((sector: string) => (
                     <option key={sector} value={sector}>{sector}</option>
                   ))
               }
@@ -152,7 +183,7 @@ export function DealModal({ deal, stages, sectors, onSave, onDelete, onClose, sa
               placeholder="Press Enter or comma to add"
             />
             <div className="tags-list">
-              {tags.map(tag => (
+              {tags.map((tag: string) => (
                 <span key={tag} className="tag-chip">
                   {tag}
                   <button type="button" onClick={() => handleRemoveTag(tag)}>&times;</button>

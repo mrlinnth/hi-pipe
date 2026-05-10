@@ -1,9 +1,18 @@
 import { useDroppable } from '@dnd-kit/core';
 import { DealCard } from './DealCard';
+import type { Deal, Stage } from '../types';
 
-export function Column({ stage, deals, onDealClick, showTags, compactCards }) {
+type Props = {
+  stage: Stage;
+  deals: Deal[];
+  onDealClick: (deal: Deal) => void;
+  showTags: boolean;
+  compactCards: boolean;
+};
+
+export function Column({ stage, deals, onDealClick, showTags, compactCards }: Props) {
   const { setNodeRef } = useDroppable({ id: stage.slug });
-  const totalValue = deals.reduce((sum, deal) => sum + (deal.value || 0), 0);
+  const totalValue = deals.reduce((sum: number, deal: Deal) => sum + (deal.value || 0), 0);
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -19,7 +28,7 @@ export function Column({ stage, deals, onDealClick, showTags, compactCards }) {
         </div>
       </div>
       <div className="column-content">
-        {deals.map(deal => (
+        {deals.map((deal: Deal) => (
           <DealCard key={deal._id} deal={deal} onClick={onDealClick} showTags={showTags} compactCards={compactCards} />
         ))}
       </div>

@@ -1,19 +1,27 @@
 import { useState } from 'react';
+type Props = {
+  sectors: string[];
+  onAdd: (name: string) => void;
+  onRename: (index: number, name: string) => void;
+  onDelete: (index: number) => void;
+  onReset: () => void;
+};
 
-export function SectorSettings({ sectors, onAdd, onRename, onDelete, onReset }) {
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editValue, setEditValue] = useState('');
-  const [newValue, setNewValue] = useState('');
+export function SectorSettings({ sectors, onAdd, onRename, onDelete, onReset }: Props) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+  const [newValue, setNewValue] = useState<string>('');
 
-  const startEdit = (i) => {
+  const startEdit = (i: number) => {
     setEditingIndex(i);
     setEditValue(sectors[i]);
   };
 
   const handleEditSave = () => {
+    if (editingIndex === null) return;
     const trimmed = editValue.trim();
     if (!trimmed) return;
-    const isDuplicate = sectors.some((s, i) => i !== editingIndex && s.toLowerCase() === trimmed.toLowerCase());
+    const isDuplicate = sectors.some((s: string, i: number) => i !== editingIndex && s.toLowerCase() === trimmed.toLowerCase());
     if (isDuplicate) return;
     onRename(editingIndex, trimmed);
     setEditingIndex(null);
@@ -25,11 +33,11 @@ export function SectorSettings({ sectors, onAdd, onRename, onDelete, onReset }) 
     setEditValue('');
   };
 
-  const handleAdd = (e) => {
+  const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmed = newValue.trim();
     if (!trimmed) return;
-    const isDuplicate = sectors.some(s => s.toLowerCase() === trimmed.toLowerCase());
+    const isDuplicate = sectors.some((s: string) => s.toLowerCase() === trimmed.toLowerCase());
     if (isDuplicate) return;
     onAdd(trimmed);
     setNewValue('');
@@ -41,7 +49,7 @@ export function SectorSettings({ sectors, onAdd, onRename, onDelete, onReset }) 
         {sectors.length === 0 && (
           <p className="settings-hint">No sectors configured — add one below.</p>
         )}
-        {sectors.map((sector, i) => (
+        {sectors.map((sector: string, i: number) => (
           <div key={i} className="stage-row">
             {editingIndex === i ? (
               <div className="stage-edit">
@@ -49,7 +57,7 @@ export function SectorSettings({ sectors, onAdd, onRename, onDelete, onReset }) 
                   type="text"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') handleEditCancel(); }}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') handleEditCancel(); }}
                   autoFocus
                 />
                 <button className="btn-save" onClick={handleEditSave}>✓</button>

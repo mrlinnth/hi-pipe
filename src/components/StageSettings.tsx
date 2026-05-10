@@ -1,16 +1,28 @@
 import { useState } from 'react';
+import type { Stage } from '../types';
 
-export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onClose, dealCounts, asPanel }) {
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', color: '' });
-  const [newForm, setNewForm] = useState({ name: '', color: '#1A1A18' });
+type Props = {
+  stages: Stage[];
+  onAdd: (data: Partial<Stage>) => void;
+  onEdit: (id: string, data: Partial<Stage>) => void;
+  onDelete: (id: string) => void;
+  onReorder: (id: string, direction: 'up' | 'down') => void;
+  onClose?: () => void;
+  dealCounts: Record<string, number>;
+  asPanel?: boolean;
+};
 
-  const handleEditClick = (stage) => {
+export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onClose, dealCounts, asPanel }: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ name: string; color: string }>({ name: '', color: '' });
+  const [newForm, setNewForm] = useState<{ name: string; color: string }>({ name: '', color: '#1A1A18' });
+
+  const handleEditClick = (stage: Stage) => {
     setEditingId(stage._id);
     setEditForm({ name: stage.name, color: stage.color });
   };
 
-  const handleEditSave = (id) => {
+  const handleEditSave = (id: string) => {
     onEdit(id, editForm);
     setEditingId(null);
   };
@@ -20,7 +32,7 @@ export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onCl
     setEditForm({ name: '', color: '' });
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newForm.name.trim()) return;
     onAdd({ name: newForm.name, color: newForm.color });
@@ -30,7 +42,7 @@ export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onCl
   const content = (
     <>
       <div className="stages-list">
-        {stages.map((stage, index) => (
+        {stages.map((stage: Stage, index: number) => (
           <div key={stage._id} className="stage-row">
             {editingId === stage._id ? (
               <div className="stage-edit">
@@ -56,14 +68,14 @@ export function StageSettings({ stages, onAdd, onEdit, onDelete, onReorder, onCl
                 <div className="stage-actions">
                   <button
                     className="btn-reorder"
-                    onClick={() => onReorder(stage._id, 'up')}
-                    disabled={index === 0}
-                  >↑</button>
+                  onClick={() => onReorder(stage._id, 'up')}
+                  disabled={index === 0}
+                >↑</button>
                   <button
                     className="btn-reorder"
-                    onClick={() => onReorder(stage._id, 'down')}
-                    disabled={index === stages.length - 1}
-                  >↓</button>
+                  onClick={() => onReorder(stage._id, 'down')}
+                  disabled={index === stages.length - 1}
+                >↓</button>
                   <button className="btn-edit" onClick={() => handleEditClick(stage)}>Edit</button>
                   <button
                     className="btn-delete"

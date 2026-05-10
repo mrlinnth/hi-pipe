@@ -1,5 +1,16 @@
-export function TotalsBar({ deals, showTags, setShowTags, compactCards, setCompactCards }) {
-  const totalValue = deals.reduce((sum, deal) => sum + (deal.value || 0), 0);
+import type { Dispatch, SetStateAction } from 'react';
+import type { Deal } from '../types';
+
+type Props = {
+  deals: Deal[];
+  showTags: boolean;
+  setShowTags: Dispatch<SetStateAction<boolean>>;
+  compactCards: boolean;
+  setCompactCards: Dispatch<SetStateAction<boolean>>;
+};
+
+export function TotalsBar({ deals, showTags, setShowTags, compactCards, setCompactCards }: Props) {
+  const totalValue = deals.reduce((sum: number, deal: Deal) => sum + (deal.value || 0), 0);
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

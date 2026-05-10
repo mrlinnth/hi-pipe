@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchDeals, createDeal, updateDeal, deleteDeal } from '../api/cockpit';
+import type { Deal } from '../types';
 import {
   isApiConfigured,
   getCachedDeals, setCachedDeals,
@@ -7,16 +8,16 @@ import {
 } from '../storage';
 
 export function useDeals() {
-  const [deals, setDeals] = useState(() => getCachedDeals());
-  const [loading, setLoading] = useState(isApiConfigured());
-  const [error, setError] = useState(null);
-  const [isOnline, setIsOnline] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [savingError, setSavingError] = useState(null);
-  const [deletingError, setDeletingError] = useState(null);
+  const [deals, setDeals] = useState<Deal[]>(() => getCachedDeals());
+  const [loading, setLoading] = useState<boolean>(isApiConfigured());
+  const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
+  const [savingError, setSavingError] = useState<string | null>(null);
+  const [deletingError, setDeletingError] = useState<string | null>(null);
 
-  const reload = async () => {
+  const reload = async (): Promise<void> => {
     if (!isApiConfigured()) {
       setDeals(getCachedDeals());
       setLoading(false);
@@ -30,9 +31,10 @@ export function useDeals() {
       setCachedDeals(result.items);
       setDeals(result.items);
       setIsOnline(true);
-    } catch (err) {
-      console.error('Failed to fetch deals:', err.message);
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch deals';
+      console.error('Failed to fetch deals:', message);
+      setError(message);
       setDeals(getCachedDeals());
       setIsOnline(false);
     } finally {
@@ -40,7 +42,7 @@ export function useDeals() {
     }
   };
 
-  const addDeal = async (data) => {
+  const addDeal = async (data: Partial<Deal>): Promise<void> => {
     setSaving(true);
     setSavingError(null);
     try {
@@ -49,17 +51,18 @@ export function useDeals() {
         await reload();
       } else {
         const newDeal = localCreateDeal(data);
-        setDeals(prev => [...prev, newDeal]);
+        setDeals((prev: Deal[]) => [...prev, newDeal]);
       }
-    } catch (err) {
-      setSavingError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save deal';
+      setSavingError(message);
       throw err;
     } finally {
       setSaving(false);
     }
   };
 
-  const editDeal = async (id, data) => {
+  const editDeal = async (id: string, data: Partial<Deal>): Promise<void> => {
     setSaving(true);
     setSavingError(null);
     try {
@@ -68,17 +71,18 @@ export function useDeals() {
         await reload();
       } else {
         localUpdateDeal(id, data);
-        setDeals(prev => prev.map(d => d._id === id ? { ...d, ...data } : d));
+        setDeals((prev: Deal[]) => prev.map((d: Deal) => d._id === id ? { ...d, ...data } : d));
       }
-    } catch (err) {
-      setSavingError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update deal';
+      setSavingError(message);
       throw err;
     } finally {
       setSaving(false);
     }
   };
 
-  const removeDeal = async (id) => {
+  const removeDeal = async (id: string): Promise<void> => {
     setDeleting(true);
     setDeletingError(null);
     try {
@@ -87,17 +91,18 @@ export function useDeals() {
         await reload();
       } else {
         localDeleteDeal(id);
-        setDeals(prev => prev.filter(d => d._id !== id));
+        setDeals((prev: Deal[]) => prev.filter((d: Deal) => d._id !== id));
       }
-    } catch (err) {
-      setDeletingError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete deal';
+      setDeletingError(message);
       throw err;
     } finally {
       setDeleting(false);
     }
   };
 
-  const moveDeal = async (id, newStageSlug) => {
+  const moveDeal = async (id: string, newStageSlug: string): Promise<void> => {
     await editDeal(id, { stage: newStageSlug });
   };
 

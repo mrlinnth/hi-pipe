@@ -1,4 +1,9 @@
-export function WelcomeModal({ onUseApi, onUseOffline }) {
+type Props = {
+  onUseApi: () => void;
+  onUseOffline: () => void;
+};
+
+export function WelcomeModal({ onUseApi, onUseOffline }: Props) {
   return (
     <div className="modal-backdrop">
       <div className="modal-content welcome-modal" onClick={(e) => e.stopPropagation()}>
