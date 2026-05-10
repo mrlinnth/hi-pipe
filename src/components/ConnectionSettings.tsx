@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { saveApiConfig, clearApiConfig } from '../storage';
+type Props = {
+  onClose: () => void;
+  isOnline: boolean;
+  asPanel?: boolean;
+  connectionError?: string | null;
+};
 
-export function ConnectionSettings({ onClose, isOnline, asPanel, connectionError }) {
-  const [url, setUrl] = useState(() => localStorage.getItem('hipipe_api_url') ?? '');
-  const [key, setKey] = useState(() => localStorage.getItem('hipipe_api_key') ?? '');
-  const [saved, setSaved] = useState(false);
+export function ConnectionSettings({ onClose, isOnline, asPanel, connectionError }: Props) {
+  const [url, setUrl] = useState<string>(() => localStorage.getItem('hipipe_api_url') ?? '');
+  const [key, setKey] = useState<string>(() => localStorage.getItem('hipipe_api_key') ?? '');
+  const [saved, setSaved] = useState<boolean>(false);
 
-  const handleSave = (e) => {
+  const handleSave = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveApiConfig(url, key);
     setSaved(true);

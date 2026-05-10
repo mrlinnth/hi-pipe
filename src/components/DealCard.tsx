@@ -1,6 +1,15 @@
 import { useDraggable } from '@dnd-kit/core';
+import type { Deal } from '../types';
 
-export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = true, compactCards = false }) {
+type Props = {
+  deal: Deal;
+  onClick: (deal: Deal) => void;
+  isDraggingOverlay?: boolean;
+  showTags?: boolean;
+  compactCards?: boolean;
+};
+
+export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = true, compactCards = false }: Props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal._id,
     disabled: isDraggingOverlay,
@@ -43,7 +52,7 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = 
       )}
       {!compactCards && showTags && deal.tags && (
         <div className="deal-tags">
-          {deal.tags.split(',').map((tag, index) => (
+          {deal.tags.split(',').map((tag: string, index: number) => (
             <span key={index} className="tag-chip">
               {tag.trim()}
             </span>

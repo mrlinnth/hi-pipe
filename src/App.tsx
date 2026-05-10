@@ -8,6 +8,15 @@ import { DealModal } from './components/DealModal';
 import { SettingsPanel } from './components/SettingsPanel';
 import { WelcomeModal } from './components/WelcomeModal';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
+import type { Deal, Stage } from './types';
+
+type ActiveFilters = {
+  period: string | null;
+  sector: string | null;
+  tag: string | null;
+};
+
+type SettingsTab = 'connection' | 'stages' | 'sectors';
 
 function App() {
   const { deals, loading: dealsLoading, saving, deleting, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals();
@@ -15,23 +24,23 @@ function App() {
 
   const isOnline = dealsOnline && stagesOnline;
 
-  const [activeFilters, setActiveFilters] = useState({
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     period: null,
     sector: null,
     tag: null,
   });
 
-  const [selectedDeal, setSelectedDeal] = useState(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settingsTab, setSettingsTab] = useState('stages');
-  const [sectors, setSectors] = useState(() => getSectors());
-  const [showTags, setShowTags] = useState(false);
-  const [compactCards, setCompactCards] = useState(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>('stages');
+  const [sectors, setSectors] = useState<string[]>(() => getSectors());
+  const [showTags, setShowTags] = useState<boolean>(false);
+  const [compactCards, setCompactCards] = useState<boolean>(false);
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(
     () => !localStorage.getItem('hi_pipe_welcomed')
   );
-  const [dealModalError, setDealModalError] = useState(null);
+  const [dealModalError, setDealModalError] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,11 +62,11 @@ function App() {
     }
   }, [activeFilters]);
 
-  const filteredDeals = deals.filter(deal => {
+  const filteredDeals = deals.filter((deal: Deal) => {
     if (activeFilters.period && deal.period !== activeFilters.period) return false;
     if (activeFilters.sector && deal.sector !== activeFilters.sector) return false;
     if (activeFilters.tag) {
-      const tags = deal.tags ? deal.tags.split(',').map(t => t.trim()) : [];
+      const tags = deal.tags ? deal.tags.split(',').map((t: string) => t.trim()) : [];
       if (!tags.includes(activeFilters.tag)) return false;
     }
     return true;
@@ -66,23 +75,23 @@ function App() {
   const availableTags = Array.from(
     new Set(
       deals.flatMap(deal =>
-        deal.tags ? deal.tags.split(',').map(t => t.trim()) : []
+        deal.tags ? deal.tags.split(',').map((t: string) => t.trim()) : []
       )
     )
   ).sort();
 
-  const handleFilterChange = (filterType, value) => {
-    setActiveFilters(prev => ({
+  const handleFilterChange = (filterType: keyof ActiveFilters, value: string | null) => {
+    setActiveFilters((prev: ActiveFilters) => ({
       ...prev,
       [filterType]: value,
     }));
   };
 
-  const handleDealClick = (deal) => {
+  const handleDealClick = (deal: Deal) => {
     setSelectedDeal(deal);
   };
 
-  const handleDealSave = async (data) => {
+  const handleDealSave = async (data: Partial<Deal>) => {
     setDealModalError(null);
     try {
       if (selectedDeal) {
@@ -92,46 +101,46 @@ function App() {
       }
       setSelectedDeal(null);
       setIsAddModalOpen(false);
-    } catch (err) {
-      setDealModalError(err.message);
+    } catch (err: unknown) {
+      setDealModalError(err instanceof Error ? err.message : 'Failed to save deal');
     }
   };
 
-  const handleDealDelete = async (id) => {
+  const handleDealDelete = async (id: string) => {
     setDealModalError(null);
     try {
       await removeDeal(id);
       setSelectedDeal(null);
       setIsAddModalOpen(false);
-    } catch (err) {
-      setDealModalError(err.message);
+    } catch (err: unknown) {
+      setDealModalError(err instanceof Error ? err.message : 'Failed to delete deal');
     }
   };
 
-  const dealCounts = stages.reduce((acc, stage) => {
-    acc[stage.slug] = deals.filter(d => d.stage === stage.slug).length;
+  const dealCounts = stages.reduce<Record<string, number>>((acc, stage: Stage) => {
+    acc[stage.slug] = deals.filter((d: Deal) => d.stage === stage.slug).length;
     return acc;
   }, {});
 
-  const openSettings = (tab = 'stages') => {
+  const openSettings = (tab: SettingsTab = 'stages') => {
     setSettingsTab(tab);
     setIsSettingsOpen(true);
   };
 
-  const handleSectorAdd = (name) => {
+  const handleSectorAdd = (name: string) => {
     const next = [...sectors, name];
     setSectors(next);
     saveSectors(next);
   };
 
-  const handleSectorRename = (i, name) => {
-    const next = sectors.map((s, j) => j === i ? name : s);
+  const handleSectorRename = (i: number, name: string) => {
+    const next = sectors.map((s: string, j: number) => j === i ? name : s);
     setSectors(next);
     saveSectors(next);
   };
 
-  const handleSectorDelete = (i) => {
-    const next = sectors.filter((_, j) => j !== i);
+  const handleSectorDelete = (i: number) => {
+    const next = sectors.filter((_: string, j: number) => j !== i);
     setSectors(next);
     saveSectors(next);
   };
@@ -152,8 +161,8 @@ function App() {
     setIsWelcomeOpen(false);
   };
 
-  const handleStageReorder = async (id, direction) => {
-    const currentIndex = stages.findIndex(s => s._id === id);
+  const handleStageReorder = async (id: string, direction: 'up' | 'down') => {
+    const currentIndex = stages.findIndex((s: Stage) => s._id === id);
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     if (newIndex < 0 || newIndex >= stages.length) return;
 
@@ -187,9 +196,9 @@ function App() {
         activePeriod={activeFilters.period}
         activeSector={activeFilters.sector}
         activeTag={activeFilters.tag}
-        onPeriodChange={(value) => handleFilterChange('period', value)}
-        onSectorChange={(value) => handleFilterChange('sector', value)}
-        onTagChange={(value) => handleFilterChange('tag', value)}
+          onPeriodChange={(value: string | null) => handleFilterChange('period', value)}
+          onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
+          onTagChange={(value: string | null) => handleFilterChange('tag', value)}
         availableTags={availableTags}
         sectors={sectors}
       />

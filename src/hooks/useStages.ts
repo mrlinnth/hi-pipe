@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchStages, createStage, updateStage, deleteStage } from '../api/cockpit';
+import type { Stage } from '../types';
 import {
   isApiConfigured,
   getCachedStages, setCachedStages,
@@ -7,20 +8,20 @@ import {
 } from '../storage';
 
 export function useStages() {
-  const [stages, setStages] = useState(() => getCachedStages().sort((a, b) => a.sort_order - b.sort_order));
-  const [loading, setLoading] = useState(isApiConfigured());
-  const [error, setError] = useState(null);
-  const [isOnline, setIsOnline] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [addingError, setAddingError] = useState(null);
-  const [editingError, setEditingError] = useState(null);
-  const [deletingError, setDeletingError] = useState(null);
+  const [stages, setStages] = useState<Stage[]>(() => getCachedStages().sort((a: Stage, b: Stage) => a.sort_order - b.sort_order));
+  const [loading, setLoading] = useState<boolean>(isApiConfigured());
+  const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [adding, setAdding] = useState<boolean>(false);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
+  const [addingError, setAddingError] = useState<string | null>(null);
+  const [editingError, setEditingError] = useState<string | null>(null);
+  const [deletingError, setDeletingError] = useState<string | null>(null);
 
-  const reload = async () => {
+  const reload = async (): Promise<void> => {
     if (!isApiConfigured()) {
-      const sorted = getCachedStages().sort((a, b) => a.sort_order - b.sort_order);
+      const sorted = getCachedStages().sort((a: Stage, b: Stage) => a.sort_order - b.sort_order);
       setStages(sorted);
       setLoading(false);
       setIsOnline(false);
@@ -30,14 +31,15 @@ export function useStages() {
       setLoading(true);
       setError(null);
       const result = await fetchStages();
-      const sorted = result.items.sort((a, b) => a.sort_order - b.sort_order);
+      const sorted = result.items.sort((a: Stage, b: Stage) => a.sort_order - b.sort_order);
       setCachedStages(sorted);
       setStages(sorted);
       setIsOnline(true);
-    } catch (err) {
-      console.error('Failed to fetch stages:', err.message);
-      setError(err.message);
-      const sorted = getCachedStages().sort((a, b) => a.sort_order - b.sort_order);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch stages';
+      console.error('Failed to fetch stages:', message);
+      setError(message);
+      const sorted = getCachedStages().sort((a: Stage, b: Stage) => a.sort_order - b.sort_order);
       setStages(sorted);
       setIsOnline(false);
     } finally {
@@ -45,7 +47,7 @@ export function useStages() {
     }
   };
 
-  const addStage = async (data) => {
+  const addStage = async (data: Partial<Stage>): Promise<void> => {
     setAdding(true);
     setAddingError(null);
     try {
@@ -54,17 +56,18 @@ export function useStages() {
         await reload();
       } else {
         const newStage = localCreateStage(data);
-        setStages(prev => [...prev, newStage].sort((a, b) => a.sort_order - b.sort_order));
+        setStages((prev: Stage[]) => [...prev, newStage].sort((a: Stage, b: Stage) => a.sort_order - b.sort_order));
       }
-    } catch (err) {
-      setAddingError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add stage';
+      setAddingError(message);
       throw err;
     } finally {
       setAdding(false);
     }
   };
 
-  const editStage = async (id, data) => {
+  const editStage = async (id: string, data: Partial<Stage>): Promise<void> => {
     setEditing(true);
     setEditingError(null);
     try {
@@ -73,20 +76,21 @@ export function useStages() {
         await reload();
       } else {
         localUpdateStage(id, data);
-        setStages(prev =>
-          prev.map(s => s._id === id ? { ...s, ...data } : s)
-              .sort((a, b) => a.sort_order - b.sort_order)
+        setStages((prev: Stage[]) =>
+          prev.map((s: Stage) => s._id === id ? { ...s, ...data } : s)
+              .sort((a: Stage, b: Stage) => a.sort_order - b.sort_order)
         );
       }
-    } catch (err) {
-      setEditingError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to edit stage';
+      setEditingError(message);
       throw err;
     } finally {
       setEditing(false);
     }
   };
 
-  const removeStage = async (id) => {
+  const removeStage = async (id: string): Promise<void> => {
     setDeleting(true);
     setDeletingError(null);
     try {
@@ -95,10 +99,11 @@ export function useStages() {
         await reload();
       } else {
         localDeleteStage(id);
-        setStages(prev => prev.filter(s => s._id !== id));
+        setStages((prev: Stage[]) => prev.filter((s: Stage) => s._id !== id));
       }
-    } catch (err) {
-      setDeletingError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete stage';
+      setDeletingError(message);
       throw err;
     } finally {
       setDeleting(false);

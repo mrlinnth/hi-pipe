@@ -1,14 +1,23 @@
 import { useState } from 'react';
 import { PERIODS } from '../constants/options';
+type Props = {
+  activePeriod: string | null;
+  activeSector: string | null;
+  activeTag: string | null;
+  onPeriodChange: (value: string | null) => void;
+  onSectorChange: (value: string | null) => void;
+  onTagChange: (value: string | null) => void;
+  availableTags: string[];
+  sectors: string[];
+};
 
-export function FilterBar({ activePeriod, activeSector, activeTag, onPeriodChange, onSectorChange, onTagChange, availableTags, sectors }) {
+export function FilterBar({ activePeriod, activeSector, activeTag, onPeriodChange, onSectorChange, onTagChange, availableTags, sectors }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const activeChips = [
-    activePeriod && { label: activePeriod, clear: () => onPeriodChange(null) },
-    activeSector && { label: activeSector, clear: () => onSectorChange(null) },
-    activeTag    && { label: activeTag,    clear: () => onTagChange(null) },
-  ].filter(Boolean);
+  const activeChips: Array<{ label: string; clear: () => void }> = [];
+  if (activePeriod) activeChips.push({ label: activePeriod, clear: () => onPeriodChange(null) });
+  if (activeSector) activeChips.push({ label: activeSector, clear: () => onSectorChange(null) });
+  if (activeTag) activeChips.push({ label: activeTag, clear: () => onTagChange(null) });
 
   const hasActive = activeChips.length > 0;
 

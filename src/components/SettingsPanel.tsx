@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { ConnectionSettings } from './ConnectionSettings';
 import { StageSettings } from './StageSettings';
 import { SectorSettings } from './SectorSettings';
+import type { Stage } from '../types';
 
-const TABS = ['connection', 'stages', 'sectors'];
+const TABS: Array<'connection' | 'stages' | 'sectors'> = ['connection', 'stages', 'sectors'];
 
 export function SettingsPanel({
   initialTab,
@@ -12,8 +13,24 @@ export function SettingsPanel({
   isOnline,
   connectionError,
   onClose,
+}: {
+  initialTab?: 'connection' | 'stages' | 'sectors';
+  stages: Stage[];
+  onAdd: (data: Partial<Stage>) => void;
+  onEdit: (id: string, data: Partial<Stage>) => void;
+  onDelete: (id: string) => void;
+  onReorder: (id: string, direction: 'up' | 'down') => void;
+  dealCounts: Record<string, number>;
+  sectors: string[];
+  onSectorAdd: (name: string) => void;
+  onSectorRename: (index: number, name: string) => void;
+  onSectorDelete: (index: number) => void;
+  onSectorReset: () => void;
+  isOnline: boolean;
+  connectionError: string | null;
+  onClose: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState(initialTab ?? 'stages');
+  const [activeTab, setActiveTab] = useState<'connection' | 'stages' | 'sectors'>(initialTab ?? 'stages');
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
