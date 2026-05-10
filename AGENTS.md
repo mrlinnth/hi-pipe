@@ -45,7 +45,7 @@ hi-pipe/
 │   ├── icon-192.png
 │   ├── icon-512.png
 │   └── icon-maskable.png
-├── docs/
+├── ai/
 │   ├── architecture.md          # Component tree, data flow, state management
 │   └── implementation_plan.md
 ├── docker-compose.yml
@@ -94,7 +94,7 @@ Responsible for:
 ## Collaboration Guidelines
 
 ### Before Starting Work
-1. Read `docs/architecture.md` for component/data flow overview
+1. Read `ai/architecture.md` for component/data flow overview
 2. Identify which agent role fits the task
 3. Check for related TODOs in the codebase
 
@@ -214,7 +214,7 @@ npm run build              # Production build (catches import errors)
 
 ## References
 
-- Architecture: `docs/architecture.md`
-- Implementation plan: `docs/implementation_plan.md`
+- Architecture: `ai/architecture.md`
+- Implementation plan: `ai/implementation_plan.md`
 - Cockpit API docs: https://getcockpit.com/documentation/api/
 - CMS instance: `https://cms.hiyan.xyz/:hi-pipe/api`
