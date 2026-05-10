@@ -1,14 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthContext } from '../context/AuthContext';
-import { fetchDeals, createDeal, updateDeal, deleteDeal } from '../lib/cockpit';
+import { createDeal as createRemoteDeal, deleteDeal as deleteRemoteDeal, updateDeal as updateRemoteDeal } from '../lib/cockpit';
+import { enqueue, getAll, getQueue, put, remove } from '../lib/db';
+import { seedCache } from '../lib/sync';
+import { useOnlineStatus } from './useOnlineStatus';
 import type { Deal } from '../types';
-import {
-  isApiConfigured,
-  getCachedDeals, setCachedDeals,
-  localCreateDeal, localUpdateDeal, localDeleteDeal,
-} from '../storage';
 
 const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
+
+function sortDeals(items: Deal[]): Deal[] {
+  return [...items].sort((left, right) => {
+    if ((left.sort_order ?? 0) !== (right.sort_order ?? 0)) {
+      return (left.sort_order ?? 0) - (right.sort_order ?? 0);
+    }
+
+    return (left._created ?? 0) - (right._created ?? 0);
+  });
+}
 
 function filterDealsForUser(items: Deal[], userId: string | null, userRole: string | null): Deal[] {
   if (!isTeamMode || userRole === 'management' || userRole === 'admin' || !userId) {
@@ -18,56 +26,100 @@ function filterDealsForUser(items: Deal[], userId: string | null, userRole: stri
   return items.filter((deal: Deal) => deal.owner?._id === userId);
 }
 
+function buildLocalDeal(data: Partial<Deal>, ownerId: string | null, ownerName: string): Deal {
+  return {
+    ...(data as Deal),
+    _id: `temp_${crypto.randomUUID()}`,
+    _pending: true,
+    _created: Date.now(),
+    ...(ownerId ? { owner: { _id: ownerId, name: ownerName } } : {}),
+  };
+}
+
+async function readVisibleDeals(userId: string | null, userRole: string | null): Promise<Deal[]> {
+  const storedDeals = await getAll<Deal>('deals');
+  return filterDealsForUser(sortDeals(storedDeals), userId, userRole);
+}
+
 export function useDeals(userId?: string) {
   const { authState } = useAuthContext();
+  const { isOnline: browserOnline } = useOnlineStatus();
   const effectiveUserId = userId ?? authState?.userId ?? null;
   const userRole = authState?.userRole ?? null;
-  const [deals, setDeals] = useState<Deal[]>(() => getCachedDeals());
-  const [loading, setLoading] = useState<boolean>(isApiConfigured());
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [isOnline, setIsOnline] = useState<boolean>(browserOnline);
   const [saving, setSaving] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [savingError, setSavingError] = useState<string | null>(null);
   const [deletingError, setDeletingError] = useState<string | null>(null);
+  const [queueCount, setQueueCount] = useState<number>(0);
 
-  const reload = async (): Promise<void> => {
-    if (!isApiConfigured()) {
-      setDeals(filterDealsForUser(getCachedDeals(), effectiveUserId, userRole));
-      setLoading(false);
-      setIsOnline(false);
-      return;
-    }
+  const refreshQueueCount = useCallback(async (): Promise<number> => {
+    const queue = await getQueue();
+    setQueueCount(queue.length);
+    return queue.length;
+  }, []);
+
+  const refreshFromStore = useCallback(async (): Promise<Deal[]> => {
+    const visibleDeals = await readVisibleDeals(effectiveUserId, userRole);
+    setDeals(visibleDeals);
+    return visibleDeals;
+  }, [effectiveUserId, userRole]);
+
+  const reload = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      const result = await fetchDeals(isTeamMode ? effectiveUserId ?? undefined : undefined);
-      const visibleDeals = filterDealsForUser(result, effectiveUserId, userRole);
-      setCachedDeals(result);
+      let storedDeals = await getAll<Deal>('deals');
+      if (storedDeals.length === 0 && browserOnline) {
+        await seedCache();
+        storedDeals = await getAll<Deal>('deals');
+      }
+
+      const visibleDeals = filterDealsForUser(sortDeals(storedDeals), effectiveUserId, userRole);
       setDeals(visibleDeals);
-      setIsOnline(true);
+      setIsOnline(browserOnline);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch deals';
-      console.error('Failed to fetch deals:', message);
+      const message = err instanceof Error ? err.message : 'Failed to load deals';
       setError(message);
-      setDeals(filterDealsForUser(getCachedDeals(), effectiveUserId, userRole));
+      try {
+        const visibleDeals = await readVisibleDeals(effectiveUserId, userRole);
+        setDeals(visibleDeals);
+      } catch {
+        setDeals([]);
+      }
       setIsOnline(false);
     } finally {
       setLoading(false);
+      await refreshQueueCount();
     }
-  };
+  }, [browserOnline, effectiveUserId, refreshQueueCount, userRole]);
 
-  const addDeal = async (data: Partial<Deal>): Promise<void> => {
+  const addDeal = useCallback(async (data: Partial<Deal>): Promise<void> => {
     setSaving(true);
     setSavingError(null);
+
     try {
-      if (isApiConfigured() && isOnline) {
-        await createDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
-        await reload();
+      if (browserOnline) {
+        const created = await createRemoteDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
+        await put('deals', created);
       } else {
-        const newDeal = localCreateDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
-        setDeals((prev: Deal[]) => [...prev, newDeal]);
+        const localDeal = buildLocalDeal(data, isTeamMode ? effectiveUserId : null, authState?.userName ?? '');
+        await put('deals', localDeal);
+        await enqueue({
+          action: 'create',
+          collection: 'deals',
+          payload: localDeal,
+          tempId: localDeal._id,
+          timestamp: Date.now(),
+        });
       }
+
+      await refreshFromStore();
+      await refreshQueueCount();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save deal';
       setSavingError(message);
@@ -75,19 +127,38 @@ export function useDeals(userId?: string) {
     } finally {
       setSaving(false);
     }
-  };
+  }, [authState?.userName, browserOnline, effectiveUserId, refreshFromStore, refreshQueueCount]);
 
-  const editDeal = async (id: string, data: Partial<Deal>): Promise<void> => {
+  const editDeal = useCallback(async (id: string, data: Partial<Deal>): Promise<void> => {
     setSaving(true);
     setSavingError(null);
+
     try {
-      if (isApiConfigured() && isOnline) {
-        await updateDeal(id, data);
-        await reload();
+      const storedDeals = await getAll<Deal>('deals');
+      const existingDeal = storedDeals.find((deal: Deal) => deal._id === id);
+      const baseDeal = existingDeal ?? ({ _id: id } as Deal);
+      const nextDeal: Deal = {
+        ...baseDeal,
+        ...(data as Deal),
+        _id: id,
+        _pending: existingDeal?._pending ? true : !browserOnline,
+      };
+
+      if (browserOnline && !existingDeal?._pending) {
+        const updated = await updateRemoteDeal(id, data);
+        await put('deals', updated);
       } else {
-        localUpdateDeal(id, data);
-        setDeals((prev: Deal[]) => prev.map((d: Deal) => d._id === id ? { ...d, ...data } : d));
+        await put('deals', nextDeal);
+        await enqueue({
+          action: 'update',
+          collection: 'deals',
+          payload: nextDeal,
+          timestamp: Date.now(),
+        });
       }
+
+      await refreshFromStore();
+      await refreshQueueCount();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update deal';
       setSavingError(message);
@@ -95,19 +166,33 @@ export function useDeals(userId?: string) {
     } finally {
       setSaving(false);
     }
-  };
+  }, [browserOnline, refreshFromStore, refreshQueueCount]);
 
-  const removeDeal = async (id: string): Promise<void> => {
+  const removeDeal = useCallback(async (id: string): Promise<void> => {
     setDeleting(true);
     setDeletingError(null);
+
     try {
-      if (isApiConfigured() && isOnline) {
-        await deleteDeal(id);
-        await reload();
+      const storedDeals = await getAll<Deal>('deals');
+      const existingDeal = storedDeals.find((deal: Deal) => deal._id === id);
+
+      if (browserOnline && !existingDeal?._pending) {
+        await deleteRemoteDeal(id);
+        await remove('deals', id);
       } else {
-        localDeleteDeal(id);
-        setDeals((prev: Deal[]) => prev.filter((d: Deal) => d._id !== id));
+        if (existingDeal) {
+          await enqueue({
+            action: 'delete',
+            collection: 'deals',
+            payload: { _id: id, ...existingDeal },
+            timestamp: Date.now(),
+          });
+        }
+        await remove('deals', id);
       }
+
+      await refreshFromStore();
+      await refreshQueueCount();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete deal';
       setDeletingError(message);
@@ -115,15 +200,35 @@ export function useDeals(userId?: string) {
     } finally {
       setDeleting(false);
     }
-  };
+  }, [browserOnline, refreshFromStore, refreshQueueCount]);
 
-  const moveDeal = async (id: string, newStageSlug: string): Promise<void> => {
+  const moveDeal = useCallback(async (id: string, newStageSlug: string): Promise<void> => {
     await editDeal(id, { stage: newStageSlug });
-  };
+  }, [editDeal]);
 
   useEffect(() => {
-    reload();
-  }, [effectiveUserId, userRole]);
+    void reload();
+  }, [reload]);
 
-  return { deals, loading, error, isOnline, saving, deleting, savingError, deletingError, reload, addDeal, editDeal, removeDeal, moveDeal };
+  return {
+    deals,
+    loading,
+    isLoading: loading,
+    error,
+    isOnline,
+    saving,
+    deleting,
+    savingError,
+    deletingError,
+    queueCount,
+    refreshQueueCount,
+    reload,
+    addDeal,
+    createDeal: addDeal,
+    editDeal,
+    updateDeal: editDeal,
+    removeDeal,
+    deleteDeal: removeDeal,
+    moveDeal,
+  };
 }

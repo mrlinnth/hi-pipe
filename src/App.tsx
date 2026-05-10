@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { useAuthContext } from './context/AuthContext';
 import { LoginScreen } from './components/LoginScreen';
@@ -6,12 +6,15 @@ import { useAuth } from './hooks/useAuth';
 import { useDeals } from './hooks/useDeals';
 import { useStages } from './hooks/useStages';
 import { useReferenceData } from './hooks/useReferenceData';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { FilterBar } from './components/FilterBar';
 import { TotalsBar } from './components/TotalsBar';
 import { Board } from './components/Board';
 import { DealModal } from './components/DealModal';
 import { SettingsPanel } from './components/SettingsPanel';
+import { SyncStatusBar } from './components/SyncStatusBar';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS } from './storage';
+import { syncNow } from './lib/sync';
 import type { Deal, Stage } from './types';
 
 type ActiveFilters = {
@@ -26,9 +29,32 @@ const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
 
 function MainApp() {
   const { authState } = useAuthContext();
-  const { deals, loading: dealsLoading, saving, deleting, addDeal, editDeal, removeDeal, moveDeal, isOnline: dealsOnline } = useDeals(authState?.userId);
-  const { stages, loading: stagesLoading, error: stagesError, addStage, editStage, removeStage, isOnline: stagesOnline } = useStages();
-  const { clients, sectors: refSectors, quarters } = useReferenceData();
+  const { isOnline: browserOnline } = useOnlineStatus();
+  const {
+    deals,
+    loading: dealsLoading,
+    saving,
+    deleting,
+    addDeal,
+    editDeal,
+    removeDeal,
+    moveDeal,
+    isOnline: dealsOnline,
+    queueCount,
+    refreshQueueCount,
+    reload: reloadDeals,
+  } = useDeals(authState?.userId);
+  const {
+    stages,
+    loading: stagesLoading,
+    error: stagesError,
+    addStage,
+    editStage,
+    removeStage,
+    isOnline: stagesOnline,
+    reload: reloadStages,
+  } = useStages();
+  const { clients, sectors: refSectors, quarters, refresh: refreshReferenceData } = useReferenceData();
 
   const isOnline = dealsOnline && stagesOnline;
 
@@ -45,6 +71,56 @@ function MainApp() {
   const [showTags, setShowTags] = useState<boolean>(false);
   const [compactCards, setCompactCards] = useState<boolean>(false);
   const [dealModalError, setDealModalError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [syncErrorCount, setSyncErrorCount] = useState<number>(0);
+  const syncTimerRef = useRef<number | null>(null);
+
+  const clearSyncTimer = useCallback(() => {
+    if (syncTimerRef.current !== null) {
+      window.clearTimeout(syncTimerRef.current);
+      syncTimerRef.current = null;
+    }
+  }, []);
+
+  const handleSync = async () => {
+    if (!browserOnline || syncStatus === 'syncing') {
+      return;
+    }
+
+    clearSyncTimer();
+    setSyncStatus('syncing');
+    setSyncErrorCount(0);
+
+    try {
+      const syncUserId = authState?.userRole === 'management' || authState?.userRole === 'admin'
+        ? undefined
+        : authState?.userId;
+      const result = await syncNow(syncUserId);
+      await Promise.all([
+        reloadDeals(),
+        reloadStages(),
+        refreshReferenceData(),
+        refreshQueueCount(),
+      ]);
+
+      if (result.success) {
+        setSyncStatus('success');
+        syncTimerRef.current = window.setTimeout(() => {
+          setSyncStatus('idle');
+          syncTimerRef.current = null;
+        }, 1600);
+      } else {
+        setSyncErrorCount(result.errors.length);
+        setSyncStatus('error');
+      }
+    } catch (err) {
+      setSyncErrorCount(1);
+      setSyncStatus('error');
+      console.error('Sync failed:', err);
+    }
+  };
+
+  useEffect(() => () => clearSyncTimer(), [clearSyncTimer]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -182,6 +258,15 @@ function MainApp() {
           <button className="btn-settings" onClick={() => openSettings('stages')} aria-label="Settings">⚙️</button>
         </div>
       </header>
+
+      <SyncStatusBar
+        isOnline={browserOnline}
+        pendingCount={queueCount}
+        status={syncStatus}
+        errorCount={syncErrorCount}
+        onSync={handleSync}
+        onRetry={handleSync}
+      />
 
       <FilterBar
         activePeriod={activeFilters.period}

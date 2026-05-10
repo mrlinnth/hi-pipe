@@ -1,17 +1,24 @@
-import { useState, useEffect } from 'react';
-import { fetchStages, createStage, updateStage, deleteStage } from '../lib/cockpit';
+import { useCallback, useEffect, useState } from 'react';
+import { createStage, updateStage, deleteStage } from '../lib/cockpit';
+import { getAll } from '../lib/db';
+import { seedCache } from '../lib/sync';
+import { useOnlineStatus } from './useOnlineStatus';
 import type { Stage } from '../types';
-import {
-  isApiConfigured,
-  getCachedStages, setCachedStages,
-  localCreateStage, localUpdateStage, localDeleteStage,
-} from '../storage';
+
+function sortStages(items: Stage[]): Stage[] {
+  return [...items].sort((left: Stage, right: Stage) => left.sort_order - right.sort_order);
+}
+
+async function readStages(): Promise<Stage[]> {
+  return sortStages(await getAll<Stage>('stages'));
+}
 
 export function useStages() {
-  const [stages, setStages] = useState<Stage[]>(() => getCachedStages().sort((a: Stage, b: Stage) => a.sort_order - b.sort_order));
-  const [loading, setLoading] = useState<boolean>(isApiConfigured());
+  const { isOnline: browserOnline } = useOnlineStatus();
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [isOnline, setIsOnline] = useState<boolean>(browserOnline);
   const [adding, setAdding] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
@@ -19,45 +26,41 @@ export function useStages() {
   const [editingError, setEditingError] = useState<string | null>(null);
   const [deletingError, setDeletingError] = useState<string | null>(null);
 
-  const reload = async (): Promise<void> => {
-    if (!isApiConfigured()) {
-      const sorted = getCachedStages().sort((a: Stage, b: Stage) => a.sort_order - b.sort_order);
-      setStages(sorted);
-      setLoading(false);
-      setIsOnline(false);
-      return;
-    }
+  const reload = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      const result = await fetchStages();
-      const sorted = result.items.sort((a: Stage, b: Stage) => a.sort_order - b.sort_order);
-      setCachedStages(sorted);
+      let storedStages = await getAll<Stage>('stages');
+      if (storedStages.length === 0 && browserOnline) {
+        await seedCache();
+        storedStages = await getAll<Stage>('stages');
+      }
+
+      const sorted = sortStages(storedStages);
       setStages(sorted);
-      setIsOnline(true);
+      setIsOnline(browserOnline);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch stages';
-      console.error('Failed to fetch stages:', message);
+      const message = err instanceof Error ? err.message : 'Failed to load stages';
       setError(message);
-      const sorted = getCachedStages().sort((a: Stage, b: Stage) => a.sort_order - b.sort_order);
-      setStages(sorted);
+      try {
+        setStages(await readStages());
+      } catch {
+        setStages([]);
+      }
       setIsOnline(false);
     } finally {
       setLoading(false);
     }
-  };
+  }, [browserOnline]);
 
-  const addStage = async (data: Partial<Stage>): Promise<void> => {
+  const addStage = useCallback(async (data: Partial<Stage>): Promise<void> => {
     setAdding(true);
     setAddingError(null);
+
     try {
-      if (isApiConfigured() && isOnline) {
-        await createStage(data);
-        await reload();
-      } else {
-        const newStage = localCreateStage(data);
-        setStages((prev: Stage[]) => [...prev, newStage].sort((a: Stage, b: Stage) => a.sort_order - b.sort_order));
-      }
+      await createStage(data);
+      await reload();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add stage';
       setAddingError(message);
@@ -65,22 +68,15 @@ export function useStages() {
     } finally {
       setAdding(false);
     }
-  };
+  }, [reload]);
 
-  const editStage = async (id: string, data: Partial<Stage>): Promise<void> => {
+  const editStage = useCallback(async (id: string, data: Partial<Stage>): Promise<void> => {
     setEditing(true);
     setEditingError(null);
+
     try {
-      if (isApiConfigured() && isOnline) {
-        await updateStage(id, data);
-        await reload();
-      } else {
-        localUpdateStage(id, data);
-        setStages((prev: Stage[]) =>
-          prev.map((s: Stage) => s._id === id ? { ...s, ...data } : s)
-              .sort((a: Stage, b: Stage) => a.sort_order - b.sort_order)
-        );
-      }
+      await updateStage(id, data);
+      await reload();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to edit stage';
       setEditingError(message);
@@ -88,19 +84,15 @@ export function useStages() {
     } finally {
       setEditing(false);
     }
-  };
+  }, [reload]);
 
-  const removeStage = async (id: string): Promise<void> => {
+  const removeStage = useCallback(async (id: string): Promise<void> => {
     setDeleting(true);
     setDeletingError(null);
+
     try {
-      if (isApiConfigured() && isOnline) {
-        await deleteStage(id);
-        await reload();
-      } else {
-        localDeleteStage(id);
-        setStages((prev: Stage[]) => prev.filter((s: Stage) => s._id !== id));
-      }
+      await deleteStage(id);
+      await reload();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete stage';
       setDeletingError(message);
@@ -108,11 +100,27 @@ export function useStages() {
     } finally {
       setDeleting(false);
     }
-  };
+  }, [reload]);
 
   useEffect(() => {
-    reload();
-  }, []);
+    void reload();
+  }, [reload]);
 
-  return { stages, loading, error, isOnline, adding, editing, deleting, addingError, editingError, deletingError, reload, addStage, editStage, removeStage };
+  return {
+    stages,
+    loading,
+    isLoading: loading,
+    error,
+    isOnline,
+    adding,
+    editing,
+    deleting,
+    addingError,
+    editingError,
+    deletingError,
+    reload,
+    addStage,
+    editStage,
+    removeStage,
+  };
 }

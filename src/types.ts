@@ -62,6 +62,18 @@ export type Deal = {
   client?: Pick<CockpitClient, '_id' | 'name'> | null;
   _modified?: number;
   _created?: number;
+  _pending?: boolean;
+};
+
+export type SyncQueueAction = 'create' | 'update' | 'delete';
+
+export type SyncQueueEntry = {
+  id?: number;
+  action: SyncQueueAction;
+  collection: 'deals';
+  payload: Partial<Deal>;
+  tempId?: string;
+  timestamp: number;
 };
 
 // ─── Local auth session ───────────────────────────────────────────────────

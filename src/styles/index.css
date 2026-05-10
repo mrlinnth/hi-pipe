@@ -140,6 +140,58 @@ body {
   background: var(--surface);
 }
 
+.sync-status-bar {
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(247, 247, 244, 0.96) 100%);
+  color: var(--text-primary);
+}
+
+.sync-status-bar.offline {
+  background: linear-gradient(180deg, #fef3f2 0%, #fffafa 100%);
+}
+
+.sync-status-copy {
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.01em;
+}
+
+.sync-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sync-status-button {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sync-status-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sync-status-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -420,6 +472,11 @@ body {
   border-color: var(--text-secondary);
 }
 
+.deal-card.pending {
+  border-style: dashed;
+  background: linear-gradient(180deg, rgba(45, 58, 80, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
 .deal-card.dragging {
   opacity: 0.4;
 }
@@ -495,6 +552,12 @@ body {
 
 .badge-sector {
   background: #F9FAFB;
+}
+
+.badge-pending {
+  border-color: rgba(45, 58, 80, 0.28);
+  color: var(--brand);
+  background: rgba(45, 58, 80, 0.06);
 }
 
 .deal-tags {
