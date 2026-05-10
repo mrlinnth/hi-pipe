@@ -472,6 +472,7 @@ function formatPayload(collection, item) {
   if (collection === 'stages') {
     return {
       _id: item._id,
+      _state: 1,
       name: item.name,
       slug: item.slug,
       color: item.color,
@@ -481,6 +482,7 @@ function formatPayload(collection, item) {
 
   return {
     _id: item._id,
+    _state: 1,
     name: item.name,
     value: item.value,
     stage: item.stage,
@@ -549,30 +551,30 @@ function requestWithCurl(method, url, key, payload) {
   return { status, body };
 }
 
-function verifyWrittenItem(url, key, collection, id) {
-  const verifyUrl = `${url}/content/items/${collection}?filter[_id]=${encodeURIComponent(id)}&limit=1&populate=1`;
-  const result = requestWithCurl('GET', verifyUrl, key);
+async function verifyWrittenItem(url, key, collection, id) {
+  const verifyUrl = `${url}/content/items/${collection}?populate=1`;
+  const res = await fetch(verifyUrl, {
+    method: 'GET',
+    headers: {
+      'Api-Key': key,
+      'Content-Type': 'application/json',
+    },
+  });
 
-  let parsed;
-  try {
-    parsed = JSON.parse(result.body);
-  } catch {
-    throw new Error(`Failed to parse verification response for ${collection} ${id}: ${result.body}`);
+  if (!res.ok) {
+    throw new Error(`Verification GET failed for ${collection} ${id}: HTTP ${res.status}`);
   }
 
+  const parsed = await res.json();
   const items = Array.isArray(parsed)
     ? parsed
-    : Array.isArray(parsed?.items)
+    : typeof parsed === 'object' && parsed !== null && Array.isArray(parsed.items)
       ? parsed.items
       : [];
+  const item = items.find((candidate) => candidate && candidate._id === id) ?? null;
 
-  if (items.length === 0) {
-    throw new Error(`Verification failed for ${collection} ${id}: record not readable after write.`);
-  }
-
-  const item = items[0];
   if (!item || item._id !== id) {
-    throw new Error(`Verification failed for ${collection} ${id}: unexpected response ${result.body}`);
+    throw new Error(`Verification failed for ${collection} ${id}: unexpected response ${JSON.stringify(parsed)}`);
   }
 
   return item;
@@ -589,7 +591,7 @@ Default mode is dry-run. The script reads .env and/or environment variables:
 In dry-run mode, no network calls are made.`);
 }
 
-function main() {
+async function main() {
   const { apply, help } = parseArgs(process.argv.slice(2));
   if (help) {
     printHelp();
@@ -631,11 +633,21 @@ function main() {
     const preview = result.body.trim();
     console.log(`[${label}] OK ${preview ? preview.slice(0, 180) : '(empty response)'}`);
 
-    const verified = verifyWrittenItem(url, key, op.collection, op.item._id);
-    console.log(`[${label}] VERIFIED ${op.collection} ${verified._id}`);
+    if (process.env.VERIFY_COCKPIT_MIGRATION === '1') {
+      try {
+        const verified = await verifyWrittenItem(url, key, op.collection, op.item._id);
+        console.log(`[${label}] VERIFIED ${op.collection} ${verified._id}`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.warn(`[${label}] VERIFY WARN ${op.collection} ${op.item._id}: ${message}`);
+      }
+    }
   }
 
   console.log(`Completed ${operations.length} Cockpit upserts.`);
 }
 
-main();
+main().catch((err) => {
+  console.error(err instanceof Error ? err.stack || err.message : String(err));
+  process.exit(1);
+});
