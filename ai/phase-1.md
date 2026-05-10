@@ -28,47 +28,32 @@ In personal mode:
 
 ---
 
-REFERENCE
+REFERENCE — useAuth.ts from BIM.visitplan
 
-The BIM.visitplan project uses the same Cockpit backend and the same MS
-login pattern. Use the following as a reference for the OAuth flow:
+The BIM.visitplan project has a useAuth.ts hook. Copy the following from it
+exactly, as-is:
+  - AuthStatus type
+  - AuthState type (the reducer state, not the localStorage type)
+  - AuthAction type
+  - authReducer function
+  - initialState constant
 
-auth.ts pattern (adapted for web SPA, not React Native):
-  - OAuth flow: Authorization Code + PKCE (public client, no secret)
-  - Get email from id_token claims (preferred_username or email field)
-  - Decode id_token by splitting on '.' and base64-decoding the middle part
-  - After getting email, call Cockpit to find or create user record
-  - Store userId, userName, userRole, msEmail in localStorage
+Do NOT copy anything that imports from expo-auth-session, expo-web-browser,
+or react-native. Those are React Native only and will not work in a browser.
 
-The Cockpit users collection endpoint is:
-  GET  {API_URL}/content/items/users?filter[ms_email]={email}
-  POST {API_URL}/content/item/users   (to create new user)
-
-CockpitUser type is already in src/types.ts.
-AuthState type is already in src/types.ts.
-
----
-
-ENVIRONMENT VARIABLES
-
-Add these to .env.example (do not put real values):
-  VITE_APP_MODE=personal
-  VITE_ENTRA_CLIENT_ID=
-  VITE_ENTRA_TENANT_ID=
-  VITE_ALLOWED_DOMAIN=bimgoc.com
-
-In team mode, API credentials also come from .env:
-  VITE_COCKPIT_API_URL=
-  VITE_COCKPIT_API_KEY=
+The auth mechanics (login trigger, code exchange, session restore) must be
+rewritten for the web using @azure/msal-browser as described below.
 
 ---
 
 PACKAGES TO INSTALL
 
-  npm install @azure/msal-browser
+  npm install @azure/msal-browser@^4
 
 Do not use expo-auth-session — that is for React Native.
-Use @azure/msal-browser for the web PKCE flow.
+Use @azure/msal-browser for the web PKCE flow. MSAL handles the
+authorization code exchange internally — there is no manual code
+exchange step like handleAuthCode in the React Native version.
 
 ---
 
@@ -79,20 +64,25 @@ This file handles all MS auth logic. It must export:
 1. initMsal(): void
    Initialises the MSAL PublicClientApplication using VITE_ENTRA_CLIENT_ID
    and VITE_ENTRA_TENANT_ID. Call once on app startup in team mode only.
+   Store the instance in module scope so it can be reused.
 
 2. loginWithMicrosoft(): Promise<AuthResult>
-   Triggers the MSAL loginPopup flow with scopes ['openid', 'profile', 'email'].
+   Calls msalInstance.loginPopup({ scopes: ['openid', 'profile', 'email'] }).
    On success:
-     a. Extract email from the id token claims (preferred_username or email)
-     b. Validate email domain is @bimgoc.com — if not, return error result
-     c. Call findOrCreateUser(email, name) from src/lib/cockpit.ts
-     d. Check approval_status — if pending or rejected, return appropriate error
-     e. Check active field — if false, return error
-     f. Store AuthState in localStorage under key 'hi_pipe_auth'
-     g. Return success result with user
+     a. Extract email from result.idTokenClaims.preferred_username or .email
+     b. Extract name from result.idTokenClaims.name
+     c. Validate email domain is @bimgoc.com — if not, return domain_not_allowed
+     d. Call findOrCreateUser(email, name) from src/lib/cockpit.ts
+     e. Check approval_status — pending or rejected returns pending_approval error
+     f. Check active field — false returns inactive error
+     g. Store AuthState in localStorage under key 'hi_pipe_auth'
+     h. Return success result with user
+   Note: MSAL handles PKCE and token exchange internally. You do not need
+   to exchange an authorization code manually.
 
 3. restoreSession(): AuthState | null
-   Read 'hi_pipe_auth' from localStorage and return it, or null if not found.
+   Read 'hi_pipe_auth' from localStorage and parse it.
+   Return the AuthState or null if not found or invalid.
 
 4. logout(): void
    Clear 'hi_pipe_auth' from localStorage.
@@ -104,41 +94,60 @@ AuthResult type (define in this file):
 
 ---
 
-STEP 2 — Create src/lib/cockpit.ts
+STEP 2 — Create src/hooks/useAuth.ts
 
-This file contains Cockpit API functions needed for auth.
-Later phases will add more functions here.
+Copy the reducer pattern from BIM.visitplan useAuth.ts:
+  - AuthStatus, AuthState, AuthAction types (the reducer ones)
+  - authReducer function
+  - initialState constant
 
-Export these functions:
+Then implement the hook using the web MSAL flow:
 
-1. getUserByMsEmail(email: string): Promise<CockpitUser | null>
-   GET {API_URL}/content/items/users
-   Filter: { ms_email: email }
-   Return first result or null.
+  export function useAuth() {
+    const [state, dispatch] = useReducer(authReducer, initialState);
 
-2. createUser(email: string, name: string): Promise<CockpitUser>
-   POST {API_URL}/content/item/users
-   Body: {
-     email,
-     ms_email: email,
-     name,
-     role: 'am',
-     approval_status: 'pending',
-     active: false
-   }
-   Return created user.
+    // Restore session on mount
+    useEffect(() => {
+      dispatch({ type: 'RESTORE_START' });
+      const session = restoreSession();
+      if (session) {
+        dispatch({ type: 'RESTORE_SUCCESS', user: session });
+      } else {
+        dispatch({ type: 'RESTORE_EMPTY' });
+      }
+    }, []);
 
-3. findOrCreateUser(email: string, name: string): Promise<CockpitUser>
-   Call getUserByMsEmail first.
-   If not found, call createUser.
-   Return the user either way.
+    // Login — calls MSAL loginPopup
+    const login = useCallback(async () => {
+      dispatch({ type: 'SIGN_IN_START' });
+      try {
+        const result = await loginWithMicrosoft();
+        if (result.success) {
+          dispatch({ type: 'SIGN_IN_SUCCESS', user: result.user });
+        } else {
+          dispatch({ type: 'SIGN_IN_FAIL', reason: result.reason, message: result.message });
+        }
+      } catch (err) {
+        dispatch({
+          type: 'SIGN_IN_FAIL',
+          reason: 'error',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    }, []);
 
-All functions must use the API_URL and API_KEY from:
-  - VITE_COCKPIT_API_URL and VITE_COCKPIT_API_KEY env vars in team mode
-  - localStorage values in personal mode (existing behaviour)
+    // Logout
+    const logout = useCallback(() => {
+      authLogout();
+      dispatch({ type: 'LOGOUT' });
+    }, []);
 
-To handle both modes, read a helper that returns the current connection
-config — check localStorage first, fall back to env vars.
+    return { status: state.status, user: state.user, role: state.user?.role ?? null,
+             error: state.error, login, logout };
+  }
+
+Note: No loginReady flag is needed — MSAL loginPopup is always ready,
+unlike the Expo useAuthRequest which needs time to prepare.
 
 ---
 
