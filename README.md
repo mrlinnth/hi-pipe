@@ -58,6 +58,25 @@ Notes:
 - The Entra variables are required for team mode.
 - In personal mode, `VITE_COCKPIT_API_URL` and `VITE_COCKPIT_API_KEY` can be entered locally in the app as well as set in `.env`.
 
+## Prod Migration
+Use the Cockpit migration script when you need to seed or refresh production data.
+
+```bash
+npm run migrate:prod-cockpit
+```
+
+Dry-run is the default. To apply the writes, add `--apply`:
+
+```bash
+npm run migrate:prod-cockpit -- --apply
+```
+
+The script:
+- Upserts the production stages and deals by `_id`
+- Sets every migrated deal owner to `6a0087d93a92a881070864ef`
+- Maps `Q1` to `Q1 FY2026` and `Q2` to `Q2 FY2026`
+- Clears `sector` on migrated deals
+
 ## Project Structure
 ```
 hi-pipe/
