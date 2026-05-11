@@ -75,7 +75,7 @@ async function fetchCollection<T>(path: string, params?: Record<string, string |
 
 export async function findOrCreateUser(email: string, name: string): Promise<CockpitUser> {
   const existingUsers = await fetchCollection<CockpitUser>(USERS_PATH, {
-    'filter[ms_email]': email,
+    filter: JSON.stringify({ ms_email: email }),
     limit: 1,
     populate: 1,
   });
@@ -109,23 +109,23 @@ export async function findOrCreateUser(email: string, name: string): Promise<Coc
 
 export async function fetchClients(): Promise<CockpitClient[]> {
   const items = await fetchCollection<CockpitClient>(CLIENTS_PATH, {
-    'sort[name]': 1,
+    sort: JSON.stringify({ name: 1 }),
   });
   return sortByName(items);
 }
 
 export async function fetchSectors(): Promise<CockpitSector[]> {
   const items = await fetchCollection<CockpitSector>(SECTORS_PATH, {
-    'filter[active]': true,
-    'sort[name]': 1,
+    filter: JSON.stringify({ active: true }),
+    sort: JSON.stringify({ name: 1 }),
   });
   return sortByName(items);
 }
 
 export async function fetchFinancialQuarters(): Promise<CockpitFinancialQuarter[]> {
   const items = await fetchCollection<CockpitFinancialQuarter>(QUARTERS_PATH, {
-    'filter[active]': true,
-    'sort[quarter_number]': 1,
+    filter: JSON.stringify({ active: true }),
+    sort: JSON.stringify({ quarter_number: 1 }),
   });
   return sortByQuarterNumber(items);
 }
@@ -133,7 +133,7 @@ export async function fetchFinancialQuarters(): Promise<CockpitFinancialQuarter[
 export async function fetchDeals(userId?: string): Promise<Deal[]> {
   const params: Record<string, string | number | boolean> = { populate: 1 };
   if (userId) {
-    params['filter[owner._id]'] = userId;
+    params.filter = JSON.stringify({ 'owner._id': userId });
   }
   return fetchCollection<Deal>(DEALS_PATH, params);
 }
