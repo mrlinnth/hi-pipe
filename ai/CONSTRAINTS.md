@@ -33,6 +33,7 @@ Controlled by `VITE_APP_MODE` environment variable.
 | React | 18.x | Existing, do not upgrade |
 | Vite | 5.x | Existing, do not upgrade |
 | TypeScript | 5.x | Added in Phase 0 |
+| vite-plugin-pwa | latest | PWA service worker generation, replaces manual public/sw.js |
 | @azure/msal-browser | 4.x | MS Entra ID PKCE auth, team mode only |
 | idb | 8.0.3 | IndexedDB wrapper, Phase 3 offline |
 | xlsx (SheetJS) | 0.20.3 | Install via CDN tarball, NOT from npm registry — see note below |
