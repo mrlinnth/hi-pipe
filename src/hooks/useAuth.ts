@@ -104,25 +104,55 @@ export function useAuth(): UseAuthResult {
       return;
     }
 
-    initMsal();
-    dispatch({ type: 'RESTORE_START' });
-    const session = restoreSession();
-    if (session) {
-      dispatch({
-        type: 'RESTORE_SUCCESS',
-        user: {
-          _id: session.userId,
-          name: session.userName,
-          email: session.msEmail,
-          ms_email: session.msEmail,
-          role: session.userRole,
-          approval_status: 'approved',
-          active: true,
-        },
-      });
-    } else {
-      dispatch({ type: 'RESTORE_EMPTY' });
-    }
+    let cancelled = false;
+
+    const restoreAuthState = async () => {
+      dispatch({ type: 'RESTORE_START' });
+
+      try {
+        await initMsal();
+      } catch (err) {
+        if (cancelled) {
+          return;
+        }
+
+        setErrorReason('error');
+        dispatch({
+          type: 'SIGN_IN_FAIL',
+          reason: 'error',
+          message: err instanceof Error ? err.message : 'Microsoft auth failed to initialize.',
+        });
+        return;
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      const session = restoreSession();
+      if (session) {
+        dispatch({
+          type: 'RESTORE_SUCCESS',
+          user: {
+            _id: session.userId,
+            name: session.userName,
+            email: session.msEmail,
+            ms_email: session.msEmail,
+            role: session.userRole,
+            approval_status: 'approved',
+            active: true,
+          },
+        });
+      } else {
+        dispatch({ type: 'RESTORE_EMPTY' });
+      }
+    };
+
+    void restoreAuthState();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = useCallback(async () => {
