@@ -217,158 +217,158 @@ export function DealModal({ deal, stages, sectors, periods, clients, onSave, onD
 
         <form className="deal-drawer-form" onSubmit={handleSubmit}>
           <div className="deal-drawer-body">
-          <div className="form-group">
-            <label htmlFor="name">Name *</label>
-            <input
-              id="name"
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              disabled={!editable}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="value">Value (USD) *</label>
-            <input
-              id="value"
-              type="number"
-              value={formData.value}
-              onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-              placeholder="0"
-              required
-              disabled={!editable}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="stage">Stage</label>
-            <select
-              id="stage"
-              value={formData.stage}
-              onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
-              disabled={!editable}
-            >
-              {stages.map(stage => (
-                <option key={stage._id} value={stage.slug}>{stage.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="period">Period</label>
-            <select
-              id="period"
-              value={formData.period}
-              onChange={(e) => setFormData({ ...formData, period: e.target.value })}
-              disabled={!editable}
-            >
-              {periods.length === 0
-                ? <option value="">No financial quarters configured</option>
-                : periods.map((period: string) => (
-                <option key={period} value={period}>{period}</option>
-                ))
-              }
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="sector">Sector</label>
-            <select
-              id="sector"
-              value={formData.sector}
-              onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-              disabled={!editable}
-            >
-              {sectors.length === 0
-                ? <option disabled value="">No sectors configured</option>
-                : sectors.map((sector: string) => (
+            <div className="form-group">
+              <label htmlFor="name">Name *</label>
+              <input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                disabled={!editable}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="client">Client</label>
+              <select
+                id="client"
+                value={formData.clientId}
+                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                disabled={!editable}
+              >
+                <option value="">No client</option>
+                {clients.map((client: CockpitClient) => (
+                  <option key={client._id} value={client._id}>{client.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="value">Value (USD) *</label>
+              <input
+                id="value"
+                type="number"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                placeholder="0"
+                required
+                disabled={!editable}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="stage">Stage</label>
+              <select
+                id="stage"
+                value={formData.stage}
+                onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
+                disabled={!editable}
+              >
+                {stages.map(stage => (
+                  <option key={stage._id} value={stage.slug}>{stage.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="period">Period</label>
+              <select
+                id="period"
+                value={formData.period}
+                onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                disabled={!editable}
+              >
+                {periods.length === 0
+                  ? <option value="">No financial quarters configured</option>
+                  : periods.map((period: string) => (
+                    <option key={period} value={period}>{period}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="sector">Sector</label>
+              <select
+                id="sector"
+                value={formData.sector}
+                onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+                disabled={!editable}
+              >
+                {sectors.length === 0
+                  ? <option disabled value="">No sectors configured</option>
+                  : sectors.map((sector: string) => (
                     <option key={sector} value={sector}>{sector}</option>
                   ))
-              }
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="client">Client</label>
-            <select
-              id="client"
-              value={formData.clientId}
-              onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-              disabled={!editable}
-            >
-              <option value="">No client</option>
-              {clients.map((client: CockpitClient) => (
-                <option key={client._id} value={client._id}>{client.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="notes">Notes</label>
-            <textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={4}
-              disabled={!editable}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="tags">Tags</label>
-            <input
-              id="tags"
-              type="text"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={handleTagInputKeyDown}
-              onPaste={handlePasteTags}
-              placeholder="Press Enter or comma to add"
-              disabled={!editable}
-            />
-            <div className="tags-list">
-              {tags.map((tag: string) => (
-                <span key={tag} className="tag-chip">
-                  {tag}
-                  {editable && (
-                    <button type="button" onClick={() => handleRemoveTag(tag)}>&times;</button>
-                  )}
-                </span>
-              ))}
+                }
+              </select>
             </div>
-          </div>
 
-          {deal && editable && (
-            <div className="delete-section">
-              {showDeleteConfirm ? (
-                <>
-                  <span className="delete-confirm">Delete this deal?</span>
+            <div className="form-group">
+              <label htmlFor="notes">Notes</label>
+              <textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={4}
+                disabled={!editable}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="tags">Tags</label>
+              <input
+                id="tags"
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagInputKeyDown}
+                onPaste={handlePasteTags}
+                placeholder="Press Enter or comma to add"
+                disabled={!editable}
+              />
+              <div className="tags-list">
+                {tags.map((tag: string) => (
+                  <span key={tag} className="tag-chip">
+                    {tag}
+                    {editable && (
+                      <button type="button" onClick={() => handleRemoveTag(tag)}>&times;</button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {deal && editable && (
+              <div className="delete-section">
+                {showDeleteConfirm ? (
+                  <>
+                    <span className="delete-confirm">Delete this deal?</span>
+                    <button
+                      type="button"
+                      className="btn-delete-confirm"
+                      onClick={() => {
+                        void handleDelete();
+                      }}
+                      disabled={deleting}
+                    >
+                      {deleting ? 'Deleting...' : 'Yes'}
+                    </button>
+                    <button type="button" className="btn-delete-cancel" onClick={() => setShowDeleteConfirm(false)}>No</button>
+                  </>
+                ) : (
                   <button
                     type="button"
-                    className="btn-delete-confirm"
-                    onClick={() => {
-                      void handleDelete();
-                    }}
+                    className="btn-delete"
+                    onClick={() => setShowDeleteConfirm(true)}
                     disabled={deleting}
                   >
-                    {deleting ? 'Deleting...' : 'Yes'}
+                    Delete
                   </button>
-                  <button type="button" className="btn-delete-cancel" onClick={() => setShowDeleteConfirm(false)}>No</button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="btn-delete"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={deleting}
-                >
-                  Delete
-                </button>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
           </div>
 
           <div className="deal-drawer-footer">
