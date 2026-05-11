@@ -1025,6 +1025,30 @@ body {
   gap: 0.5rem;
 }
 
+.header-update-link {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  padding: 0.25rem 0.15rem;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.header-update-link:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.header-update-link:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
 /* Connection badge (header) */
 .connection-badge {
   display: inline-flex;

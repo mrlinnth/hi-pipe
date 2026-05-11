@@ -14,6 +14,7 @@ import { DealModal } from './components/DealModal';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SyncStatusBar } from './components/SyncStatusBar';
 import { getSectors, saveSectors, resetSectors, DEFAULT_SECTORS, DEFAULT_PERIODS } from './storage';
+import { clearAppData } from './lib/appReset';
 import { syncNow } from './lib/sync';
 import { exportDeals } from './lib/export';
 import { getAppName } from './lib/appName';
@@ -75,6 +76,7 @@ function MainApp() {
   const [dealModalError, setDealModalError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [syncErrorCount, setSyncErrorCount] = useState<number>(0);
+  const [isUpdatingApp, setIsUpdatingApp] = useState<boolean>(false);
   const syncTimerRef = useRef<number | null>(null);
 
   const clearSyncTimer = useCallback(() => {
@@ -207,6 +209,26 @@ function MainApp() {
     setIsSettingsOpen(true);
   };
 
+  const handleUpdateApp = async () => {
+    const shouldUpdate = window.confirm(
+      'This will clear saved app data and reload the app so you can pick up the latest release.',
+    );
+
+    if (!shouldUpdate) {
+      return;
+    }
+
+    setIsUpdatingApp(true);
+
+    try {
+      await clearAppData();
+    } catch (err) {
+      console.error('Failed to clear app data:', err);
+    } finally {
+      window.location.reload();
+    }
+  };
+
   const handleSectorAdd = (name: string) => {
     if (isTeamMode) return;
     const next = [...sectors, name];
@@ -265,6 +287,14 @@ function MainApp() {
           <span className={`connection-badge ${isTeamMode ? (isOnline ? 'online' : 'offline') : 'local'}`}>
             {isTeamMode ? (isOnline ? 'Online' : 'Offline') : 'Local'}
           </span>
+          <button
+            type="button"
+            className="header-update-link"
+            onClick={() => void handleUpdateApp()}
+            disabled={isUpdatingApp}
+          >
+            {isUpdatingApp ? 'Updating…' : 'Update App'}
+          </button>
           <button className="btn-settings" onClick={() => openSettings('stages')} aria-label="Settings">⚙️</button>
         </div>
       </header>

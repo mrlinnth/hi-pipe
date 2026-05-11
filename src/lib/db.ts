@@ -1,6 +1,8 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { CockpitClient, CockpitFinancialQuarter, CockpitSector, Deal, Stage, SyncQueueEntry } from '../types';
 
+export const DB_NAME = 'hi_pipe_db';
+
 type DataStoreName = 'deals' | 'clients' | 'stages' | 'sectors' | 'quarters' | 'sync_queue';
 
 interface HiPipeDBSchema extends DBSchema {
@@ -37,7 +39,7 @@ let dbPromise: Promise<DB> | null = null;
 
 export function openDb(): Promise<DB> {
   if (!dbPromise) {
-    dbPromise = openDB<HiPipeDBSchema>('hi_pipe_db', 1, {
+    dbPromise = openDB<HiPipeDBSchema>(DB_NAME, 1, {
       upgrade(database) {
         database.createObjectStore('deals', { keyPath: '_id' });
         database.createObjectStore('clients', { keyPath: '_id' });
@@ -50,6 +52,19 @@ export function openDb(): Promise<DB> {
   }
 
   return dbPromise;
+}
+
+export async function closeDb(): Promise<void> {
+  if (!dbPromise) {
+    return;
+  }
+
+  try {
+    const db = await dbPromise;
+    db.close();
+  } finally {
+    dbPromise = null;
+  }
 }
 
 export async function getAll<T>(store: DataStoreName): Promise<T[]> {
