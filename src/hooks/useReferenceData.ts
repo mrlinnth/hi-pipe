@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAll } from '../lib/db';
 import { seedCache } from '../lib/sync';
+import { filterCurrentYearQuarters } from '../lib/referenceData';
 import { useOnlineStatus } from './useOnlineStatus';
 import type { CockpitClient, CockpitFinancialQuarter, CockpitSector } from '../types';
 
@@ -42,7 +43,7 @@ export function useReferenceData(): ReferenceDataState {
   }) => {
     setClients(data.clients);
     setSectors(data.sectors);
-    setQuarters(data.quarters);
+    setQuarters(filterCurrentYearQuarters(data.quarters));
   }, []);
 
   const load = useCallback(async (): Promise<void> => {

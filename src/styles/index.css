@@ -657,6 +657,10 @@ body {
   background: #F9FAFB;
 }
 
+.badge-owner {
+  background: #F8FAFC;
+}
+
 .badge-pending {
   border-color: rgba(45, 58, 80, 0.28);
   color: var(--brand);
@@ -749,6 +753,12 @@ body {
   border-radius: var(--radius);
   margin-bottom: 1rem;
   font-size: 0.875rem;
+}
+
+.modal-readonly-meta {
+  margin: -0.75rem 0 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
 .form-group {
@@ -1343,6 +1353,36 @@ body {
 .settings-tab-btn.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
+}
+
+.settings-app-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.settings-app-actions-copy {
+  min-width: 0;
+}
+
+.settings-app-actions-copy h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.settings-app-actions-copy p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 /* Sector Settings — footer row for reset button */

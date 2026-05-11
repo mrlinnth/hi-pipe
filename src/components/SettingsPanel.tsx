@@ -10,6 +10,7 @@ export function SettingsPanel({
   initialTab,
   stages, onAdd, onEdit, onDelete, onReorder, dealCounts,
   sectors, onSectorAdd, onSectorRename, onSectorDelete, onSectorReset,
+  onResetApp, isResettingApp = false,
   isOnline,
   connectionError,
   isTeamMode = false,
@@ -27,6 +28,8 @@ export function SettingsPanel({
   onSectorRename: (index: number, name: string) => void;
   onSectorDelete: (index: number) => void;
   onSectorReset: () => void;
+  onResetApp: () => void;
+  isResettingApp?: boolean;
   isOnline: boolean;
   connectionError: string | null;
   isTeamMode?: boolean;
@@ -56,6 +59,21 @@ export function SettingsPanel({
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
+        </div>
+
+        <div className="settings-app-actions">
+          <div className="settings-app-actions-copy">
+            <h3>App Actions</h3>
+            <p>Reset clears saved app data and reloads the app.</p>
+          </div>
+          <button
+            type="button"
+            className="header-update-link"
+            onClick={onResetApp}
+            disabled={isResettingApp}
+          >
+            {isResettingApp ? 'Resetting…' : 'Reset App'}
+          </button>
         </div>
 
         {activeTab === 'connection' && !isTeamMode && (

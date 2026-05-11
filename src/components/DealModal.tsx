@@ -126,7 +126,7 @@ export function DealModal({ deal, stages, sectors, periods, clients, onSave, onD
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>{deal ? (editable ? 'Edit Deal' : 'View Deal') : 'New Deal'}</h2>
-        {deal?.owner?.name && !editable && (
+        {deal?.owner?.name && (
           <p className="modal-readonly-meta">Owner: {deal.owner.name}</p>
         )}
         

@@ -76,7 +76,7 @@ function MainApp() {
   const [dealModalError, setDealModalError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [syncErrorCount, setSyncErrorCount] = useState<number>(0);
-  const [isUpdatingApp, setIsUpdatingApp] = useState<boolean>(false);
+  const [isResettingApp, setIsResettingApp] = useState<boolean>(false);
   const syncTimerRef = useRef<number | null>(null);
 
   const clearSyncTimer = useCallback(() => {
@@ -209,7 +209,7 @@ function MainApp() {
     setIsSettingsOpen(true);
   };
 
-  const handleUpdateApp = async () => {
+  const handleResetApp = async () => {
     const shouldUpdate = window.confirm(
       'This will clear saved app data and reload the app so you can pick up the latest release.',
     );
@@ -218,7 +218,7 @@ function MainApp() {
       return;
     }
 
-    setIsUpdatingApp(true);
+    setIsResettingApp(true);
 
     try {
       await clearAppData();
@@ -287,14 +287,6 @@ function MainApp() {
           <span className={`connection-badge ${isTeamMode ? (isOnline ? 'online' : 'offline') : 'local'}`}>
             {isTeamMode ? (isOnline ? 'Online' : 'Offline') : 'Local'}
           </span>
-          <button
-            type="button"
-            className="header-update-link"
-            onClick={() => void handleUpdateApp()}
-            disabled={isUpdatingApp}
-          >
-            {isUpdatingApp ? 'Updating…' : 'Update App'}
-          </button>
           <button className="btn-settings" onClick={() => openSettings('stages')} aria-label="Settings">⚙️</button>
         </div>
       </header>
@@ -377,6 +369,8 @@ function MainApp() {
           onSectorRename={handleSectorRename}
           onSectorDelete={handleSectorDelete}
           onSectorReset={handleSectorReset}
+          onResetApp={handleResetApp}
+          isResettingApp={isResettingApp}
           isOnline={isOnline}
           connectionError={stagesError}
           isTeamMode={isTeamMode}

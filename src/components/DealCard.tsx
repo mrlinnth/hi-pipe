@@ -57,7 +57,7 @@ export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = 
           <span className="badge badge-sector">{deal.sector}</span>
           {deal._pending && <span className="badge badge-pending">Pending sync</span>}
           {deal.client?.name && <span className="badge badge-client">{deal.client.name}</span>}
-          {deal.owner?.name && !editable && <span className="badge badge-owner">{deal.owner.name}</span>}
+          {deal.owner?.name && <span className="badge badge-owner">{deal.owner.name}</span>}
         </div>
       )}
       {!compactCards && showTags && deal.tags && (
