@@ -32,7 +32,11 @@ export function SettingsPanel({
   isTeamMode?: boolean;
   onClose: () => void;
 }) {
-  const tabs = isTeamMode ? TABS.filter((tab) => tab !== 'connection') : TABS;
+  const tabs = TABS.filter((tab) => {
+    if (isTeamMode && tab === 'connection') return false;
+    if (isTeamMode && tab === 'sectors') return false;
+    return true;
+  });
   const initialActiveTab = initialTab && tabs.includes(initialTab) ? initialTab : tabs[0] ?? 'stages';
   const [activeTab, setActiveTab] = useState<'connection' | 'stages' | 'sectors'>(initialActiveTab);
 
@@ -69,7 +73,7 @@ export function SettingsPanel({
             onClose={onClose}
           />
         )}
-        {activeTab === 'sectors' && (
+        {!isTeamMode && activeTab === 'sectors' && (
           <SectorSettings
             sectors={sectors}
             onAdd={onSectorAdd}

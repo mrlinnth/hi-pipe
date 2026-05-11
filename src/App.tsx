@@ -69,7 +69,7 @@ function MainApp() {
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>('stages');
-  const [sectors, setSectors] = useState<string[]>(() => getSectors());
+  const [sectors, setSectors] = useState<string[]>(() => (isTeamMode ? [] : getSectors()));
   const [showTags, setShowTags] = useState<boolean>(false);
   const [compactCards, setCompactCards] = useState<boolean>(false);
   const [dealModalError, setDealModalError] = useState<string | null>(null);
@@ -208,24 +208,28 @@ function MainApp() {
   };
 
   const handleSectorAdd = (name: string) => {
+    if (isTeamMode) return;
     const next = [...sectors, name];
     setSectors(next);
     saveSectors(next);
   };
 
   const handleSectorRename = (i: number, name: string) => {
+    if (isTeamMode) return;
     const next = sectors.map((s: string, j: number) => (j === i ? name : s));
     setSectors(next);
     saveSectors(next);
   };
 
   const handleSectorDelete = (i: number) => {
+    if (isTeamMode) return;
     const next = sectors.filter((_: string, j: number) => j !== i);
     setSectors(next);
     saveSectors(next);
   };
 
   const handleSectorReset = () => {
+    if (isTeamMode) return;
     resetSectors();
     setSectors(DEFAULT_SECTORS);
   };
