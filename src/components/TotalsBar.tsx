@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { Deal } from '../types';
+import { getOverallDealValue } from '../lib/amount';
 
 type Props = {
   deals: Deal[];
@@ -10,7 +11,7 @@ type Props = {
 };
 
 export function TotalsBar({ deals, showTags, setShowTags, compactCards, setCompactCards }: Props) {
-  const totalValue = deals.reduce((sum: number, deal: Deal) => sum + (deal.value || 0), 0);
+  const totalValue = getOverallDealValue(deals);
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
