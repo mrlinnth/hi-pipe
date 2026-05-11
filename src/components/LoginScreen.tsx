@@ -56,6 +56,20 @@ export function LoginScreen({ isLoading, error, errorReason, onLogin }: Props) {
           }}
           disabled={busy}
         >
+          {!busy && (
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+            >
+              <rect x="1" y="1" width="8" height="8" fill="#F25022" />
+              <rect x="10" y="1" width="8" height="8" fill="#7FBA00" />
+              <rect x="1" y="10" width="8" height="8" fill="#00A4EF" />
+              <rect x="10" y="10" width="8" height="8" fill="#FFB900" />
+            </svg>
+          )}
           {buttonLabel}
         </button>
 
