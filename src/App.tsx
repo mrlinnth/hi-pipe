@@ -180,10 +180,9 @@ function MainApp() {
       } else {
         await addDeal(data);
       }
-      setSelectedDeal(null);
-      setIsAddModalOpen(false);
     } catch (err: unknown) {
       setDealModalError(err instanceof Error ? err.message : 'Failed to save deal');
+      throw err;
     }
   };
 
@@ -191,10 +190,9 @@ function MainApp() {
     setDealModalError(null);
     try {
       await removeDeal(id);
-      setSelectedDeal(null);
-      setIsAddModalOpen(false);
     } catch (err: unknown) {
       setDealModalError(err instanceof Error ? err.message : 'Failed to delete deal');
+      throw err;
     }
   };
 
