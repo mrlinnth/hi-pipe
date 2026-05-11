@@ -17,9 +17,18 @@ export type AuthResult =
 
 const AUTH_STORAGE_KEY = 'hi_pipe_auth';
 const DEFAULT_ALLOWED_DOMAIN = 'bimgoc.com';
+const MSAL_INTERACTION_STATUS_KEY = 'msal.interaction.status';
+const MSAL_TEMPORARY_CACHE_KEYS = [
+  'request.params',
+  'code.verifier',
+  'request.origin',
+  'urlHash',
+  'request.native',
+] as const;
 
 let msalInstance: PublicClientApplication | null = null;
 let initializePromise: Promise<void> | null = null;
+let interactiveLoginInProgress = false;
 
 function getClientId(): string {
   const value = import.meta.env.VITE_ENTRA_CLIENT_ID?.trim();
@@ -47,7 +56,7 @@ function getAuthority(): string {
 
 function getMsalInstance(): PublicClientApplication {
   if (!msalInstance) {
-    initMsal();
+    createMsalInstance();
   }
 
   if (!msalInstance) {
@@ -105,7 +114,7 @@ function persistSession(session: StoredAuthState): void {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
 }
 
-export function initMsal(): void {
+function createMsalInstance(): void {
   if (msalInstance) {
     return;
   }
@@ -119,27 +128,99 @@ export function initMsal(): void {
       cacheLocation: BrowserCacheLocation.LocalStorage,
     },
   });
+}
 
-  initializePromise = msalInstance.initialize().then(() => undefined).catch((err: unknown) => {
-    initializePromise = null;
-    console.error('Failed to initialize Microsoft auth:', err);
-  });
+function hasActiveRedirectResponse(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  const hashParams = new URLSearchParams(hash);
+
+  return ['code', 'error', 'state'].some(
+    (key) => searchParams.has(key) || hashParams.has(key),
+  );
+}
+
+function clearStaleMsalInteractionState(clientId: string): void {
+  if (typeof window === 'undefined' || hasActiveRedirectResponse()) {
+    return;
+  }
+
+  sessionStorage.removeItem(MSAL_INTERACTION_STATUS_KEY);
+  for (const key of MSAL_TEMPORARY_CACHE_KEYS) {
+    sessionStorage.removeItem(`msal.${clientId}.${key}`);
+  }
+}
+
+function isInteractionInProgressError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const code = (error as { errorCode?: string }).errorCode;
+  return code === BrowserAuthErrorCodes.interactionInProgress;
+}
+
+function hasMsalInteractionInProgress(): boolean {
+  if (interactiveLoginInProgress) {
+    return true;
+  }
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return Boolean(sessionStorage.getItem(MSAL_INTERACTION_STATUS_KEY));
+}
+
+export function initMsal(): Promise<void> {
+  createMsalInstance();
+
+  if (initializePromise) {
+    return initializePromise;
+  }
+
+  const instance = getMsalInstance();
+  initializePromise = (async () => {
+    try {
+      await instance.initialize();
+      clearStaleMsalInteractionState(getClientId());
+      await instance.handleRedirectPromise();
+    } catch (err: unknown) {
+      console.error('Failed to initialize Microsoft auth:', err);
+      throw err;
+    } finally {
+      initializePromise = null;
+    }
+  })();
+
+  return initializePromise;
 }
 
 async function ensureMsalReady(): Promise<void> {
-  getMsalInstance();
-  if (initializePromise) {
-    await initializePromise;
-  }
+  await initMsal();
 }
 
 export async function loginWithMicrosoft(): Promise<AuthResult> {
   try {
     await ensureMsalReady();
+
+    if (hasMsalInteractionInProgress()) {
+      return {
+        success: false,
+        reason: 'error',
+        message: 'Microsoft sign-in is already in progress. Please wait and try again.',
+      };
+    }
+
     const instance = getMsalInstance();
 
     let result;
     try {
+      interactiveLoginInProgress = true;
       result = await instance.loginPopup({ scopes: ['openid', 'profile', 'email'] });
     } catch (err) {
       if (isCancelledError(err)) {
@@ -150,11 +231,21 @@ export async function loginWithMicrosoft(): Promise<AuthResult> {
         };
       }
 
+      if (isInteractionInProgressError(err)) {
+        return {
+          success: false,
+          reason: 'error',
+          message: 'Microsoft sign-in is already in progress. Please wait and try again.',
+        };
+      }
+
       return {
         success: false,
         reason: 'error',
         message: err instanceof Error ? err.message : 'Microsoft sign-in failed.',
       };
+    } finally {
+      interactiveLoginInProgress = false;
     }
 
     const claims = result.idTokenClaims as unknown;
