@@ -55,14 +55,27 @@ export function FilterBar({
   return (
     <div className="filter-bar">
       <div className="filter-bar-header">
-        <div className="filter-bar-actions">
-          <button
-            type="button"
-            className={`filter-toggle-btn${hasActive ? ' has-active' : ''}`}
-            onClick={() => setIsExpanded(v => !v)}
-          >
-            {isExpanded ? '▲' : '▼'} Filters
-          </button>
+        <div className="filter-bar-left">
+          <div className="filter-bar-actions">
+            <button
+              type="button"
+              className={`filter-toggle-btn${hasActive ? ' has-active' : ''}`}
+              onClick={() => setIsExpanded(v => !v)}
+            >
+              {isExpanded ? '▲' : '▼'} Filters
+            </button>
+          </div>
+          {activeChips.length > 0 && (
+            <div className="filter-bar-chips">
+              {activeChips.map(({ label, clear }) => (
+                <button key={label} className="filter-active-chip" type="button" onClick={clear}>
+                  {label} <span className="filter-active-chip-x">×</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="filter-bar-right">
           <div className="export-menu" ref={exportMenuRef}>
             <button
               type="button"
@@ -99,11 +112,6 @@ export function FilterBar({
             )}
           </div>
         </div>
-        {activeChips.map(({ label, clear }) => (
-          <button key={label} className="filter-active-chip" type="button" onClick={clear}>
-            {label} <span className="filter-active-chip-x">×</span>
-          </button>
-        ))}
       </div>
 
       {isExpanded && (

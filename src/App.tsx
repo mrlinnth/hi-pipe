@@ -42,7 +42,6 @@ function MainApp() {
     addDeal,
     editDeal,
     removeDeal,
-    moveDeal,
     isOnline: dealsOnline,
     queueCount,
     refreshQueueCount,
@@ -287,6 +286,7 @@ function MainApp() {
           <span className={`connection-badge ${isTeamMode ? (isOnline ? 'online' : 'offline') : 'local'}`}>
             {isTeamMode ? (isOnline ? 'Online' : 'Offline') : 'Local'}
           </span>
+          {authState?.msEmail && <span className="header-user-email">{authState.msEmail}</span>}
           <button className="btn-settings" onClick={() => openSettings('stages')} aria-label="Settings">⚙️</button>
         </div>
       </header>
@@ -328,7 +328,6 @@ function MainApp() {
         stages={stages}
         deals={filteredDeals}
         onDealClick={handleDealClick}
-        onMoveDeal={moveDeal}
         showTags={showTags}
         compactCards={compactCards}
       />

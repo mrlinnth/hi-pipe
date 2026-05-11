@@ -232,10 +232,6 @@ export function useDeals(userId?: string) {
     }
   }, [browserOnline, refreshFromStore, refreshQueueCount]);
 
-  const moveDeal = useCallback(async (id: string, newStageSlug: string): Promise<void> => {
-    await editDeal(id, { stage: newStageSlug });
-  }, [editDeal]);
-
   useEffect(() => {
     void reload();
   }, [reload]);
@@ -259,6 +255,5 @@ export function useDeals(userId?: string) {
     updateDeal: editDeal,
     removeDeal,
     deleteDeal: removeDeal,
-    moveDeal,
   };
 }

@@ -1,4 +1,3 @@
-import { useDroppable } from '@dnd-kit/core';
 import { DealCard } from './DealCard';
 import type { Deal, Stage } from '../types';
 
@@ -11,7 +10,6 @@ type Props = {
 };
 
 export function Column({ stage, deals, onDealClick, showTags, compactCards }: Props) {
-  const { setNodeRef } = useDroppable({ id: stage.slug });
   const totalValue = deals.reduce((sum: number, deal: Deal) => sum + (deal.value || 0), 0);
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -20,7 +18,7 @@ export function Column({ stage, deals, onDealClick, showTags, compactCards }: Pr
   });
 
   return (
-    <div ref={setNodeRef} className="column">
+    <div className="column">
       <div className="column-header" style={{ backgroundColor: stage.color }}>
         <div className="column-title">{stage.name} <span className="column-count">{deals.length}</span></div>
         <div className="column-stats">

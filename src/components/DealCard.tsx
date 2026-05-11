@@ -1,48 +1,18 @@
-import { useDraggable } from '@dnd-kit/core';
-import { useAuthContext } from '../context/AuthContext';
-import { canEdit } from '../lib/auth';
 import type { Deal } from '../types';
 
 type Props = {
   deal: Deal;
   onClick: (deal: Deal) => void;
-  isDraggingOverlay?: boolean;
   showTags?: boolean;
   compactCards?: boolean;
 };
 
-export function DealCard({ deal, onClick, isDraggingOverlay = false, showTags = true, compactCards = false }: Props) {
-  const { authState } = useAuthContext();
-  const editable = canEdit(deal, authState);
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: deal._id,
-    disabled: isDraggingOverlay || !editable,
-  });
-
-  const style = !isDraggingOverlay && transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
-
+export function DealCard({ deal, onClick, showTags = true, compactCards = false }: Props) {
   return (
     <div
-      ref={isDraggingOverlay ? undefined : setNodeRef}
-      style={style}
-      {...(isDraggingOverlay ? {} : attributes)}
-      className={`deal-card ${deal._pending ? 'pending' : ''} ${isDragging && !isDraggingOverlay ? 'dragging' : ''} ${isDraggingOverlay ? 'dragging-overlay' : ''} ${compactCards ? 'compact' : ''}`}
-      onClick={() => {
-        if (!isDragging) onClick(deal);
-      }}
+      className={`deal-card ${deal._pending ? 'pending' : ''} ${compactCards ? 'compact' : ''}`}
+      onClick={() => onClick(deal)}
     >
-      {!isDraggingOverlay && (
-        <div
-          className={`drag-handle${editable ? '' : ' drag-handle-disabled'}`}
-          {...(editable ? listeners : {})}
-          aria-label={editable ? 'Drag to move' : 'Deal cannot be moved'}
-          aria-disabled={!editable}
-        >
-          ⠿
-        </div>
-      )}
       <div className="deal-name">{deal.name}</div>
       <div className="deal-value">
         {new Intl.NumberFormat('en-US', {
