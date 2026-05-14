@@ -1749,14 +1749,14 @@ body {
 
 .totals-search {
   display: flex;
-  flex: 1 1 16rem;
+  flex: 0 0 auto;
   justify-content: center;
   min-width: 0;
 }
 
 .totals-search-input {
-  width: min(100%, 24rem);
-  min-width: 12rem;
+  width: 240px;
+  min-width: 0;
   padding: 0.42rem 0.62rem;
   border: 1px solid var(--border);
   border-radius: 0.375rem;
@@ -1809,6 +1809,25 @@ body {
 
   .totals-search {
     justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .totals-search {
+    width: 100%;
+    justify-content: flex-start;
+    order: 2;
+  }
+
+  .totals-search-input {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .totals-controls {
+    width: 100%;
+    order: 3;
   }
 }
 
