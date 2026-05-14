@@ -1641,10 +1641,23 @@ body {
 
   .totals-left {
     gap: 1rem;
+    width: 100%;
+  }
+
+  .totals-search {
+    width: 100%;
+    justify-content: flex-start;
+    order: 2;
+  }
+
+  .totals-search-input {
+    max-width: none;
   }
 
   .totals-controls {
     gap: 0.75rem;
+    width: 100%;
+    order: 3;
   }
 }
 
@@ -1719,6 +1732,8 @@ body {
 
 /* Toggle Controls in Totals Bar */
 .totals-bar {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
 }
@@ -1727,12 +1742,39 @@ body {
   display: flex;
   gap: 2rem;
   align-items: center;
+  flex: 0 0 auto;
+}
+
+.totals-search {
+  display: flex;
+  flex: 1 1 16rem;
+  justify-content: center;
+  min-width: 0;
+}
+
+.totals-search-input {
+  width: min(100%, 24rem);
+  min-width: 12rem;
+  padding: 0.42rem 0.62rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.totals-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(45, 58, 80, 0.12);
 }
 
 .totals-controls {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 .toggle-control {
@@ -1756,6 +1798,16 @@ body {
 
 .toggle-text {
   line-height: 1;
+}
+
+@media (min-width: 1024px) {
+  .totals-bar {
+    flex-wrap: nowrap;
+  }
+
+  .totals-search {
+    justify-content: center;
+  }
 }
 
 /* Compact Deal Cards */
