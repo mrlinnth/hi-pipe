@@ -1,30 +1,44 @@
 import { useEffect, useRef, useState } from 'react';
+
+type OwnerOption = {
+  value: string;
+  label: string;
+};
+
 type Props = {
   activePeriod: string | null;
   activeSector: string | null;
   activeTag: string | null;
+  activeOwner: string | null;
   onPeriodChange: (value: string | null) => void;
   onSectorChange: (value: string | null) => void;
   onTagChange: (value: string | null) => void;
+  onOwnerChange: (value: string | null) => void;
   onExportCsv: () => void;
   onExportExcel: () => void;
   availableTags: string[];
   sectors: string[];
   periods: string[];
+  ownerOptions: OwnerOption[];
+  showOwnerFilter: boolean;
 };
 
 export function FilterBar({
   activePeriod,
   activeSector,
   activeTag,
+  activeOwner,
   onPeriodChange,
   onSectorChange,
   onTagChange,
+  onOwnerChange,
   onExportCsv,
   onExportExcel,
   availableTags,
   sectors,
   periods,
+  ownerOptions,
+  showOwnerFilter,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -49,6 +63,10 @@ export function FilterBar({
   if (activePeriod) activeChips.push({ label: activePeriod, clear: () => onPeriodChange(null) });
   if (activeSector) activeChips.push({ label: activeSector, clear: () => onSectorChange(null) });
   if (activeTag) activeChips.push({ label: activeTag, clear: () => onTagChange(null) });
+  if (activeOwner) {
+    const activeOwnerLabel = ownerOptions.find((owner) => owner.value === activeOwner)?.label ?? activeOwner;
+    activeChips.push({ label: activeOwnerLabel, clear: () => onOwnerChange(null) });
+  }
 
   const hasActive = activeChips.length > 0;
 
@@ -67,8 +85,8 @@ export function FilterBar({
           </div>
           {activeChips.length > 0 && (
             <div className="filter-bar-chips">
-              {activeChips.map(({ label, clear }) => (
-                <button key={label} className="filter-active-chip" type="button" onClick={clear}>
+              {activeChips.map(({ label, clear }, index) => (
+                <button key={`${label}-${index}`} className="filter-active-chip" type="button" onClick={clear}>
                   {label} <span className="filter-active-chip-x">×</span>
                 </button>
               ))}
@@ -152,6 +170,22 @@ export function FilterBar({
                   {tag}
                 </button>
               ))}
+            </div>
+          )}
+          {showOwnerFilter && (
+            <div className="filter-group">
+              {[{ value: null, label: 'All' }, ...ownerOptions.map((owner) => ({ value: owner.value, label: owner.label }))].map((owner) => {
+                return (
+                  <button
+                    key={owner.value ?? 'all'}
+                    type="button"
+                    className={`filter-pill ${activeOwner === owner.value ? 'active' : ''}`}
+                    onClick={() => onOwnerChange(owner.value)}
+                  >
+                    {owner.label}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
