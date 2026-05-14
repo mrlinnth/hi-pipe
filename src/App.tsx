@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { useAuthContext } from './context/AuthContext';
 import { LoginScreen } from './components/LoginScreen';
@@ -311,9 +311,18 @@ function MainApp() {
     return <div className="loading">Loading...</div>;
   }
 
-  const sectorOptions = isTeamMode ? refSectors.map((sector) => sector.name) : sectors;
-  const periodOptions = isTeamMode ? quarters.map((quarter) => quarter.name) : DEFAULT_PERIODS;
-  const clientOptions = isTeamMode ? clients : [];
+  const sectorOptions = useMemo(
+    () => (isTeamMode ? refSectors.map((sector) => sector.name) : sectors),
+    [refSectors, sectors],
+  );
+  const periodOptions = useMemo(
+    () => (isTeamMode ? quarters.map((quarter) => quarter.name) : DEFAULT_PERIODS),
+    [quarters],
+  );
+  const clientOptions = useMemo(
+    () => (isTeamMode ? clients : []),
+    [clients],
+  );
 
   return (
     <div className="app">

@@ -89,8 +89,11 @@ export function DealModal({ deal, stages, sectors, periods, clients, onSave, onD
     setTags(deal?.tags ? deal.tags.split(',').map((t: string) => t.trim()) : []);
     setTagInput('');
     setShowDeleteConfirm(false);
-    setIsClosing(false);
   }, [deal, periods, sectors, stages]);
+
+  useEffect(() => {
+    setIsClosing(false);
+  }, [deal]);
 
   useEffect(() => {
     if (!isClosing) {
