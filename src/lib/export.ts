@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import type { Deal } from '../types';
 
 type ExportFormat = 'csv' | 'xlsx';
@@ -60,17 +59,35 @@ function triggerDownload(content: Blob, filename: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export function exportDeals(deals: Deal[], format: ExportFormat): void {
+function toCsvValue(value: string | number): string {
+  const text = String(value ?? '');
+  if (text.includes('"') || text.includes(',') || text.includes('\n') || text.includes('\r')) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+function buildCsv(rows: ExportRow[]): string {
+  const header = EXPORT_HEADERS.join(',');
+  const body = rows
+    .map((row) => EXPORT_HEADERS.map((key) => toCsvValue(row[key] ?? '')).join(','))
+    .join('\n');
+
+  return body ? `${header}\n${body}` : header;
+}
+
+export async function exportDeals(deals: Deal[], format: ExportFormat): Promise<void> {
   const rows = buildExportRows(deals);
-  const worksheet = XLSX.utils.json_to_sheet(rows, { header: EXPORT_HEADERS });
   const filename = `hi-pipe-deals-${formatDateForFilename(new Date())}.${format}`;
 
   if (format === 'csv') {
-    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const csv = buildCsv(rows);
     triggerDownload(new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' }), filename);
     return;
   }
 
+  const XLSX = await import('xlsx');
+  const worksheet = XLSX.utils.json_to_sheet(rows, { header: EXPORT_HEADERS });
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Deals');
   XLSX.writeFile(workbook, filename);

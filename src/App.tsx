@@ -407,8 +407,12 @@ function MainApp() {
         onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
         onTagChange={(value: string | null) => handleFilterChange('tag', value)}
         onOwnerChange={(value: string | null) => handleFilterChange('owner', value)}
-        onExportCsv={() => exportDeals(filteredDeals, 'csv')}
-        onExportExcel={() => exportDeals(filteredDeals, 'xlsx')}
+        onExportCsv={() => {
+          void exportDeals(filteredDeals, 'csv');
+        }}
+        onExportExcel={() => {
+          void exportDeals(filteredDeals, 'xlsx');
+        }}
         availableTags={availableTags}
         sectors={sectorOptions}
         periods={periodOptions}
