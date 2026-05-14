@@ -307,10 +307,6 @@ function MainApp() {
     await editStage(targetStage._id, { sort_order: currentIndex + 1 });
   };
 
-  if (dealsLoading || stagesLoading) {
-    return <div className="loading">Loading...</div>;
-  }
-
   const sectorOptions = useMemo(
     () => (isTeamMode ? refSectors.map((sector) => sector.name) : sectors),
     [refSectors, sectors],
@@ -323,6 +319,10 @@ function MainApp() {
     () => (isTeamMode ? clients : []),
     [clients],
   );
+
+  if (dealsLoading || stagesLoading) {
+    return <div className="loading">Loading...</div>;
+  }
 
   return (
     <div className="app">
