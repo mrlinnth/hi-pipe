@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuthContext } from '../context/AuthContext';
 import { createDeal as createRemoteDeal, deleteDeal as deleteRemoteDeal, updateDeal as updateRemoteDeal } from '../lib/cockpit';
 import { enqueue, getAll, getQueue, put, remove } from '../lib/db';
+import { normalizeCreatedTeamDeal } from '../lib/deals';
 import { seedCache } from '../lib/sync';
 import { useOnlineStatus } from './useOnlineStatus';
 import type { Deal } from '../types';
@@ -129,7 +130,12 @@ export function useDeals(userId?: string) {
         await put('deals', localDeal);
       } else if (browserOnline) {
         const created = await createRemoteDeal(data, isTeamMode ? effectiveUserId ?? undefined : undefined);
-        await put('deals', created);
+        const normalizedDeal = normalizeCreatedTeamDeal(
+          created,
+          isTeamMode ? effectiveUserId : null,
+          authState?.userName ?? '',
+        );
+        await put('deals', normalizedDeal);
       } else {
         const localDeal = buildTeamLocalDeal(data, isTeamMode ? effectiveUserId : null, authState?.userName ?? '');
         await put('deals', localDeal);

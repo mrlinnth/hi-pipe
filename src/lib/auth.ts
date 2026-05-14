@@ -324,5 +324,13 @@ export function canEdit(deal: Deal, authState: StoredAuthState | null = restoreS
     return true;
   }
 
-  return authState?.userId === deal.owner?._id;
+  if (!authState) {
+    return false;
+  }
+
+  if (authState.userRole === 'management' || authState.userRole === 'admin') {
+    return true;
+  }
+
+  return authState.userId === deal.owner?._id;
 }
