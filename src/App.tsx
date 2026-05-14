@@ -30,6 +30,7 @@ type SettingsTab = 'connection' | 'stages' | 'sectors';
 
 const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
 const appName = getAppName();
+const TEAM_SYNC_POLL_INTERVAL_MS = 60_000;
 
 function MainApp() {
   const { authState } = useAuthContext();
@@ -77,6 +78,7 @@ function MainApp() {
   const [syncErrorCount, setSyncErrorCount] = useState<number>(0);
   const [isResettingApp, setIsResettingApp] = useState<boolean>(false);
   const syncTimerRef = useRef<number | null>(null);
+  const syncInFlightRef = useRef<boolean>(false);
 
   const clearSyncTimer = useCallback(() => {
     if (syncTimerRef.current !== null) {
@@ -85,11 +87,12 @@ function MainApp() {
     }
   }, []);
 
-  const handleSync = async () => {
-    if (!isTeamMode || !browserOnline || syncStatus === 'syncing') {
+  const handleSync = useCallback(async () => {
+    if (!isTeamMode || !browserOnline || syncInFlightRef.current) {
       return;
     }
 
+    syncInFlightRef.current = true;
     clearSyncTimer();
     setSyncStatus('syncing');
     setSyncErrorCount(0);
@@ -120,10 +123,36 @@ function MainApp() {
       setSyncErrorCount(1);
       setSyncStatus('error');
       console.error('Sync failed:', err);
+    } finally {
+      syncInFlightRef.current = false;
     }
-  };
+  }, [
+    authState?.userId,
+    authState?.userRole,
+    browserOnline,
+    clearSyncTimer,
+    refreshQueueCount,
+    refreshReferenceData,
+    reloadDeals,
+    reloadStages,
+  ]);
 
   useEffect(() => () => clearSyncTimer(), [clearSyncTimer]);
+
+  useEffect(() => {
+    if (!isTeamMode || !browserOnline) {
+      return;
+    }
+
+    void handleSync();
+    const intervalId = window.setInterval(() => {
+      void handleSync();
+    }, TEAM_SYNC_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [browserOnline, handleSync]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
