@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuthContext } from '../context/AuthContext';
 import { canEdit } from '../lib/auth';
+import { buildClientSelectOptions } from '../lib/clients';
 import type { CockpitClient, Deal, Stage } from '../types';
+import { SearchableSelect } from './SearchableSelect';
 
 type Props = {
   deal: Deal | null;
@@ -183,6 +185,7 @@ export function DealModal({ deal, stages, sectors, periods, clients, onSave, onD
   };
 
   const title = deal ? (editable ? 'Edit Deal' : 'View Deal') : 'New Deal';
+  const clientOptions = useMemo(() => buildClientSelectOptions(clients), [clients]);
 
   return (
     <div
@@ -233,18 +236,16 @@ export function DealModal({ deal, stages, sectors, periods, clients, onSave, onD
             </div>
 
             <div className="form-group">
-              <label htmlFor="client">Client</label>
-              <select
+              <label id="client-label" htmlFor="client">Client</label>
+              <SearchableSelect
                 id="client"
+                labelledBy="client-label"
                 value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                options={clientOptions}
                 disabled={!editable}
-              >
-                <option value="">No client</option>
-                {clients.map((client: CockpitClient) => (
-                  <option key={client._id} value={client._id}>{client.name}</option>
-                ))}
-              </select>
+                searchPlaceholder="Search client by name"
+                onChange={(clientId) => setFormData({ ...formData, clientId })}
+              />
             </div>
 
             <div className="form-group">
