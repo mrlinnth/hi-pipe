@@ -31,7 +31,7 @@ type SettingsTab = 'connection' | 'stages' | 'sectors';
 const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
 const appName = getAppName();
 const TEAM_SYNC_POLL_INTERVAL_MS = 60_000;
-type SyncSource = 'manual' | 'startup' | 'interval';
+type SyncSource = 'manual' | 'startup' | 'interval' | 'focus';
 
 function MainApp() {
   const { authState } = useAuthContext();
@@ -154,12 +154,32 @@ function MainApp() {
     }
 
     void handleSync('startup');
-    const intervalId = window.setInterval(() => {
-      void handleSync('interval');
-    }, TEAM_SYNC_POLL_INTERVAL_MS);
+    let intervalId: number | null = null;
+    const resetSyncInterval = () => {
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+      }
+      intervalId = window.setInterval(() => {
+        void handleSync('interval');
+      }, TEAM_SYNC_POLL_INTERVAL_MS);
+    };
+
+    resetSyncInterval();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void handleSync('focus');
+        resetSyncInterval();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+      }
     };
   }, [browserOnline, handleSync]);
 
