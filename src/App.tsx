@@ -107,9 +107,9 @@ function MainApp() {
         : authState?.userId;
       const result = await syncNow(syncUserId);
       await Promise.all([
-        reloadDeals(),
-        reloadStages(),
-        refreshReferenceData(),
+        reloadDeals({ background: true }),
+        reloadStages({ background: true }),
+        refreshReferenceData({ background: true }),
         refreshQueueCount(),
       ]);
 

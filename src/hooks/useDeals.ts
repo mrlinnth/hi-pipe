@@ -57,6 +57,7 @@ export function useDeals(userId?: string) {
   const userRole = authState?.userRole ?? null;
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState<boolean>(browserOnline);
   const [saving, setSaving] = useState<boolean>(false);
@@ -82,8 +83,13 @@ export function useDeals(userId?: string) {
     return visibleDeals;
   }, [effectiveUserId, userRole]);
 
-  const reload = useCallback(async (): Promise<void> => {
-    setLoading(true);
+  const reload = useCallback(async (options?: { background?: boolean }): Promise<void> => {
+    const isBackgroundRefresh = options?.background ?? false;
+    if (isBackgroundRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -115,7 +121,11 @@ export function useDeals(userId?: string) {
       }
       setIsOnline(isTeamMode ? false : true);
     } finally {
-      setLoading(false);
+      if (isBackgroundRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
       await refreshQueueCount();
     }
   }, [browserOnline, effectiveUserId, refreshQueueCount, userRole]);
@@ -245,6 +255,7 @@ export function useDeals(userId?: string) {
   return {
     deals,
     loading,
+    isRefreshing,
     isLoading: loading,
     error,
     isOnline,

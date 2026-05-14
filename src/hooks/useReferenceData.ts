@@ -12,7 +12,8 @@ type ReferenceDataState = {
   sectors: CockpitSector[];
   quarters: CockpitFinancialQuarter[];
   isLoading: boolean;
-  refresh: () => Promise<void>;
+  isRefreshing: boolean;
+  refresh: (options?: { background?: boolean }) => Promise<void>;
 };
 
 async function readReferenceData(): Promise<{
@@ -35,6 +36,7 @@ export function useReferenceData(): ReferenceDataState {
   const [sectors, setSectors] = useState<CockpitSector[]>([]);
   const [quarters, setQuarters] = useState<CockpitFinancialQuarter[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const applyReferenceData = useCallback((data: {
     clients: CockpitClient[];
@@ -46,8 +48,13 @@ export function useReferenceData(): ReferenceDataState {
     setQuarters(filterCurrentYearQuarters(data.quarters));
   }, []);
 
-  const load = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
+  const load = useCallback(async (options?: { background?: boolean }): Promise<void> => {
+    const isBackgroundRefresh = options?.background ?? false;
+    if (isBackgroundRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
 
     try {
       if (!isTeamMode) {
@@ -70,7 +77,11 @@ export function useReferenceData(): ReferenceDataState {
         applyReferenceData({ clients: [], sectors: [], quarters: [] });
       }
     } finally {
-      setIsLoading(false);
+      if (isBackgroundRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
     }
   }, [applyReferenceData, browserOnline]);
 
@@ -78,8 +89,8 @@ export function useReferenceData(): ReferenceDataState {
     void load();
   }, [load]);
 
-  const refresh = useCallback(async (): Promise<void> => {
-    await load();
+  const refresh = useCallback(async (options?: { background?: boolean }): Promise<void> => {
+    await load(options);
   }, [load]);
 
   return {
@@ -87,6 +98,7 @@ export function useReferenceData(): ReferenceDataState {
     sectors,
     quarters,
     isLoading,
+    isRefreshing,
     refresh,
   };
 }

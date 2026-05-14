@@ -31,6 +31,7 @@ export function useStages() {
   const { isOnline: browserOnline } = useOnlineStatus();
   const [stages, setStages] = useState<Stage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState<boolean>(browserOnline);
   const [adding, setAdding] = useState<boolean>(false);
@@ -40,8 +41,13 @@ export function useStages() {
   const [editingError, setEditingError] = useState<string | null>(null);
   const [deletingError, setDeletingError] = useState<string | null>(null);
 
-  const reload = useCallback(async (): Promise<void> => {
-    setLoading(true);
+  const reload = useCallback(async (options?: { background?: boolean }): Promise<void> => {
+    const isBackgroundRefresh = options?.background ?? false;
+    if (isBackgroundRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -75,7 +81,11 @@ export function useStages() {
       }
       setIsOnline(isTeamMode ? false : true);
     } finally {
-      setLoading(false);
+      if (isBackgroundRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [browserOnline]);
 
@@ -146,6 +156,7 @@ export function useStages() {
   return {
     stages,
     loading,
+    isRefreshing,
     isLoading: loading,
     error,
     isOnline,
