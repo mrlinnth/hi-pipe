@@ -24,6 +24,7 @@ type ActiveFilters = {
   period: string | null;
   sector: string | null;
   tag: string | null;
+  owner: string | null;
 };
 
 type SettingsTab = 'connection' | 'stages' | 'sectors';
@@ -66,6 +67,7 @@ function MainApp() {
     period: null,
     sector: null,
     tag: null,
+    owner: null,
   });
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -193,6 +195,7 @@ function MainApp() {
       period: params.get('period') || null,
       sector: params.get('sector') || null,
       tag: params.get('tag') || null,
+      owner: params.get('owner') || null,
     });
   }, []);
 
@@ -201,6 +204,7 @@ function MainApp() {
     if (activeFilters.period) params.set('period', activeFilters.period);
     if (activeFilters.sector) params.set('sector', activeFilters.sector);
     if (activeFilters.tag) params.set('tag', activeFilters.tag);
+    if (activeFilters.owner) params.set('owner', activeFilters.owner);
     const newSearch = params.toString();
     if (newSearch !== window.location.search.slice(1)) {
       window.history.replaceState({}, '', `?${newSearch}`);
@@ -214,6 +218,7 @@ function MainApp() {
       const tags = deal.tags ? deal.tags.split(',').map((t: string) => t.trim()) : [];
       if (!tags.includes(activeFilters.tag)) return false;
     }
+    if (activeFilters.owner && deal.owner?._id !== activeFilters.owner) return false;
     return true;
   });
 
@@ -222,6 +227,28 @@ function MainApp() {
       deals.flatMap(deal => (deal.tags ? deal.tags.split(',').map((t: string) => t.trim()) : []))
     )
   ).sort();
+  const ownerOptions = useMemo(
+    () => {
+      const owners = new Map<string, string>();
+
+      deals.forEach((deal) => {
+        const ownerId = deal.owner?._id?.trim();
+        if (!ownerId) return;
+
+        const ownerName = deal.owner?.name?.trim();
+        if (!owners.has(ownerId) || (owners.get(ownerId) === ownerId && ownerName)) {
+          owners.set(ownerId, ownerName || ownerId);
+        }
+      });
+
+      return Array.from(owners.entries())
+        .map(([value, label]) => ({ value, label }))
+        .sort((left, right) => left.label.localeCompare(right.label));
+    },
+    [deals],
+  );
+  const canFilterByOwner = isTeamMode
+    && (authState?.userRole === 'admin' || authState?.userRole === 'management');
 
   const handleFilterChange = (filterType: keyof ActiveFilters, value: string | null) => {
     setActiveFilters((prev: ActiveFilters) => ({
@@ -375,14 +402,22 @@ function MainApp() {
         activePeriod={activeFilters.period}
         activeSector={activeFilters.sector}
         activeTag={activeFilters.tag}
+        activeOwner={activeFilters.owner}
         onPeriodChange={(value: string | null) => handleFilterChange('period', value)}
         onSectorChange={(value: string | null) => handleFilterChange('sector', value)}
         onTagChange={(value: string | null) => handleFilterChange('tag', value)}
-        onExportCsv={() => exportDeals(filteredDeals, 'csv')}
-        onExportExcel={() => exportDeals(filteredDeals, 'xlsx')}
+        onOwnerChange={(value: string | null) => handleFilterChange('owner', value)}
+        onExportCsv={() => {
+          void exportDeals(filteredDeals, 'csv');
+        }}
+        onExportExcel={() => {
+          void exportDeals(filteredDeals, 'xlsx');
+        }}
         availableTags={availableTags}
         sectors={sectorOptions}
         periods={periodOptions}
+        ownerOptions={ownerOptions}
+        showOwnerFilter={canFilterByOwner}
       />
 
       <TotalsBar
