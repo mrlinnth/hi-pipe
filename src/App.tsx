@@ -76,6 +76,7 @@ function MainApp() {
   const [sectors, setSectors] = useState<string[]>(() => (isTeamMode ? [] : getSectors()));
   const [showTags, setShowTags] = useState<boolean>(false);
   const [compactCards, setCompactCards] = useState<boolean>(false);
+  const [dealNameQuery, setDealNameQuery] = useState<string>('');
   const [dealModalError, setDealModalError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [syncErrorCount, setSyncErrorCount] = useState<number>(0);
@@ -211,6 +212,8 @@ function MainApp() {
     }
   }, [activeFilters]);
 
+  const normalizedDealNameQuery = dealNameQuery.trim().toLowerCase();
+
   const filteredDeals = deals.filter((deal: Deal) => {
     if (activeFilters.period && deal.period !== activeFilters.period) return false;
     if (activeFilters.sector && deal.sector !== activeFilters.sector) return false;
@@ -219,6 +222,10 @@ function MainApp() {
       if (!tags.includes(activeFilters.tag)) return false;
     }
     if (activeFilters.owner && deal.owner?._id !== activeFilters.owner) return false;
+    if (normalizedDealNameQuery.length > 0) {
+      const normalizedName = deal.name.toLowerCase();
+      if (!normalizedName.includes(normalizedDealNameQuery)) return false;
+    }
     return true;
   });
 
@@ -426,6 +433,8 @@ function MainApp() {
         setShowTags={setShowTags}
         compactCards={compactCards}
         setCompactCards={setCompactCards}
+        dealNameQuery={dealNameQuery}
+        setDealNameQuery={setDealNameQuery}
       />
 
       <Board
