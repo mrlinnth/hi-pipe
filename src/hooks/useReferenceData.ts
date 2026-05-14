@@ -78,13 +78,15 @@ export function useReferenceData(): ReferenceDataState {
     void load();
   }, [load]);
 
+  const refresh = useCallback(async (): Promise<void> => {
+    await load();
+  }, [load]);
+
   return {
     clients,
     sectors,
     quarters,
     isLoading,
-    refresh: async () => {
-      await load();
-    },
+    refresh,
   };
 }

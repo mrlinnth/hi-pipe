@@ -31,6 +31,7 @@ type SettingsTab = 'connection' | 'stages' | 'sectors';
 const isTeamMode = import.meta.env.VITE_APP_MODE === 'team';
 const appName = getAppName();
 const TEAM_SYNC_POLL_INTERVAL_MS = 60_000;
+type SyncSource = 'manual' | 'startup' | 'interval';
 
 function MainApp() {
   const { authState } = useAuthContext();
@@ -87,15 +88,18 @@ function MainApp() {
     }
   }, []);
 
-  const handleSync = useCallback(async () => {
+  const handleSync = useCallback(async (source: SyncSource = 'manual') => {
     if (!isTeamMode || !browserOnline || syncInFlightRef.current) {
       return;
     }
 
+    const isManual = source === 'manual';
     syncInFlightRef.current = true;
-    clearSyncTimer();
-    setSyncStatus('syncing');
-    setSyncErrorCount(0);
+    if (isManual) {
+      clearSyncTimer();
+      setSyncStatus('syncing');
+      setSyncErrorCount(0);
+    }
 
     try {
       const syncUserId = authState?.userRole === 'management' || authState?.userRole === 'admin'
@@ -110,11 +114,16 @@ function MainApp() {
       ]);
 
       if (result.success) {
-        setSyncStatus('success');
-        syncTimerRef.current = window.setTimeout(() => {
+        if (isManual) {
+          setSyncStatus('success');
+          syncTimerRef.current = window.setTimeout(() => {
+            setSyncStatus('idle');
+            syncTimerRef.current = null;
+          }, 1600);
+        } else {
+          setSyncErrorCount(0);
           setSyncStatus('idle');
-          syncTimerRef.current = null;
-        }, 1600);
+        }
       } else {
         setSyncErrorCount(result.errors.length);
         setSyncStatus('error');
@@ -144,15 +153,19 @@ function MainApp() {
       return;
     }
 
-    void handleSync();
+    void handleSync('startup');
     const intervalId = window.setInterval(() => {
-      void handleSync();
+      void handleSync('interval');
     }, TEAM_SYNC_POLL_INTERVAL_MS);
 
     return () => {
       window.clearInterval(intervalId);
     };
   }, [browserOnline, handleSync]);
+
+  const handleManualSync = useCallback(() => {
+    void handleSync('manual');
+  }, [handleSync]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -324,8 +337,8 @@ function MainApp() {
           pendingCount={queueCount}
           status={syncStatus}
           errorCount={syncErrorCount}
-          onSync={handleSync}
-          onRetry={handleSync}
+          onSync={handleManualSync}
+          onRetry={handleManualSync}
         />
       )}
 
