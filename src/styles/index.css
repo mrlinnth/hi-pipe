@@ -1651,7 +1651,9 @@ body {
   }
 
   .totals-search-input {
+    width: 100%;
     max-width: none;
+    min-width: 0;
   }
 
   .totals-controls {
