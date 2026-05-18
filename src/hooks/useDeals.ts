@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuthContext } from '../context/AuthContext';
 import { createDeal as createRemoteDeal, deleteDeal as deleteRemoteDeal, updateDeal as updateRemoteDeal } from '../lib/cockpit';
 import { enqueue, getAll, getQueue, put, remove } from '../lib/db';
-import { normalizeCreatedTeamDeal } from '../lib/deals';
+import { normalizeCreatedTeamDeal, normalizeUpdatedTeamDeal } from '../lib/deals';
 import { seedCache } from '../lib/sync';
 import { useOnlineStatus } from './useOnlineStatus';
 import type { Deal } from '../types';
@@ -190,7 +190,8 @@ export function useDeals(userId?: string) {
         await put('deals', personalDeal);
       } else if (browserOnline && !existingDeal?._pending) {
         const updated = await updateRemoteDeal(id, data);
-        await put('deals', updated);
+        const normalizedDeal = normalizeUpdatedTeamDeal(updated, existingDeal);
+        await put('deals', normalizedDeal);
       } else {
         await put('deals', nextDeal);
         await enqueue({
