@@ -1,5 +1,6 @@
 import { createDeal, deleteDeal, fetchClients, fetchDeals, fetchFinancialQuarters, fetchSectors, fetchStages, updateDeal } from './cockpit';
 import { getAll, getQueue, put, putAll, remove } from './db';
+import { normalizeUpdatedTeamDeal } from './deals';
 import type { CockpitClient, CockpitFinancialQuarter, CockpitSector, Deal, Stage, SyncQueueEntry } from '../types';
 
 const LAST_SYNC_KEY = 'hi_pipe_last_sync';
@@ -176,6 +177,8 @@ export async function syncNow(userId?: string): Promise<SyncResult> {
   const errors: string[] = [];
   let pushed = 0;
   const queue = await getQueue();
+  const localDeals = await getAll<Deal>('deals');
+  const localDealsById = new Map(localDeals.map((deal) => [deal._id, deal]));
   const tempIdMap = new Map<string, string>();
 
   for (const entry of queue) {
@@ -185,25 +188,25 @@ export async function syncNow(userId?: string): Promise<SyncResult> {
     try {
       if (entry.action === 'create') {
         const created = await createDeal(stripPendingFlag(entry.payload), userId);
-        const localTempDeal = entry.tempId
-          ? (await getAll<Deal>('deals')).find((deal) => deal._id === entry.tempId)
-          : null;
+        const localTempDeal = entry.tempId ? localDealsById.get(entry.tempId) ?? null : null;
         const mergedDeal: Deal = localTempDeal
           ? {
-            ...created,
-            ...localTempDeal,
-            _id: created._id,
-            _pending: false,
-            owner: created.owner ?? localTempDeal.owner,
-            client: localTempDeal.client ?? created.client,
-          }
+              ...created,
+              ...localTempDeal,
+              _id: created._id,
+              _pending: false,
+              owner: created.owner ?? localTempDeal.owner,
+              client: localTempDeal.client ?? created.client,
+            }
           : { ...created, _pending: false };
 
         if (entry.tempId) {
           tempIdMap.set(entry.tempId, created._id);
           await remove('deals', entry.tempId);
+          localDealsById.delete(entry.tempId);
         }
         await put('deals', mergedDeal);
+        localDealsById.set(created._id, mergedDeal);
         pushed += 1;
       } else if (entry.action === 'update') {
         const resolvedId = originalId && tempIdMap.get(originalId) ? tempIdMap.get(originalId) : originalId;
@@ -214,7 +217,13 @@ export async function syncNow(userId?: string): Promise<SyncResult> {
           entry.payload = { ...entry.payload, _id: resolvedId };
         }
         const updated = await updateDeal(resolvedId, stripPendingFlag(entry.payload));
-        await put('deals', updated);
+        const localDeal = localDealsById.get(resolvedId) ?? null;
+        const normalizedDeal = normalizeUpdatedTeamDeal(updated, localDeal, {
+          preservePending: false,
+          fallbackOwner: entry.payload.owner ?? null,
+        });
+        await put('deals', normalizedDeal);
+        localDealsById.set(resolvedId, normalizedDeal);
         pushed += 1;
       } else {
         const resolvedId = originalId && tempIdMap.get(originalId) ? tempIdMap.get(originalId) : originalId;
@@ -226,6 +235,7 @@ export async function syncNow(userId?: string): Promise<SyncResult> {
         }
         await deleteDeal(resolvedId);
         await remove('deals', resolvedId);
+        localDealsById.delete(resolvedId);
         pushed += 1;
       }
 
